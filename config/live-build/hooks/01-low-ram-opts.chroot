@@ -4,13 +4,24 @@ set -e
 
 echo "[*] Running RyuOS low-RAM optimization hook inside chroot..."
 
-# 1. Optimize Initramfs
+# 1. Optimize Initramfs — keep gzip (low decompression RAM overhead)
+# xz produces smaller files but needs too much RAM to decompress at boot
 if [ -f /etc/initramfs-tools/initramfs.conf ]; then
-    echo "[+] Configuring minimal initramfs (COMPRESS=xz)..."
-    # Change COMPRESS=gzip (or whatever) to COMPRESS=xz
-    sed -i 's/COMPRESS=gzip/COMPRESS=xz/g' /etc/initramfs-tools/initramfs.conf
-    sed -i 's/COMPRESS=zstd/COMPRESS=xz/g' /etc/initramfs-tools/initramfs.conf
-    # Ensure initramfs is rebuilt
+    echo "[+] Optimizing initramfs (keeping gzip, stripping unnecessary modules)..."
+    # Ensure compression is gzip (lowest RAM overhead for decompression)
+    sed -i 's/COMPRESS=xz/COMPRESS=gzip/g' /etc/initramfs-tools/initramfs.conf
+    sed -i 's/COMPRESS=zstd/COMPRESS=gzip/g' /etc/initramfs-tools/initramfs.conf
+    sed -i 's/COMPRESS=lz4/COMPRESS=gzip/g' /etc/initramfs-tools/initramfs.conf
+fi
+
+# Strip unnecessary locale files and docs to reduce filesystem size
+echo "[+] Removing unnecessary locale and doc files to save space..."
+rm -rf /usr/share/locale/*/LC_MESSAGES/*.mo 2>/dev/null || true
+rm -rf /usr/share/doc/*/ 2>/dev/null || true
+rm -rf /usr/share/man/??/ /usr/share/man/??_*/ 2>/dev/null || true
+
+# Rebuild initramfs with optimized settings
+if [ -f /etc/initramfs-tools/initramfs.conf ]; then
     update-initramfs -u -k all
 fi
 
