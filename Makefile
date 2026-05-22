@@ -1,4 +1,4 @@
-.PHONY: help setup tools iso test clean lint
+.PHONY: help setup tools iso docker-iso test clean lint
 
 # Default variables
 ISO_DIR := iso
@@ -16,7 +16,8 @@ help:
 	@printf "Available targets:\n"
 	@printf "  $(GREEN)make setup$(RESET)     - Setup build environment dependencies (requires root)\n"
 	@printf "  $(GREEN)make tools$(RESET)     - Compile ryush and sys-monitor locally\n"
-	@printf "  $(GREEN)make iso$(RESET)       - Build the RyuOS ISO (creates $(ISO_PATH))\n"
+	@printf "  $(GREEN)make iso$(RESET)       - Build the RyuOS ISO natively (creates $(ISO_PATH))\n"
+	@printf "  $(GREEN)make docker-iso$(RESET)- Build the ISO safely inside a privileged Docker container\n"
 	@printf "  $(GREEN)make test$(RESET)      - Test the compiled ISO in QEMU (1GB RAM, VNC)\n"
 	@printf "  $(GREEN)make lint$(RESET)      - Lint all shell scripts using shellcheck\n"
 	@printf "  $(GREEN)make clean$(RESET)     - Clean build artifacts and ISO directory\n"
@@ -27,11 +28,16 @@ setup:
 
 tools:
 	@printf "$(YELLOW)[*] Building custom tools...$(RESET)\n"
-	@bash scripts/build-tools.sh
+	@$(MAKE) -C src
 
 iso:
-	@printf "$(YELLOW)[*] Building RyuOS ISO...$(RESET)\n"
+	@printf "$(YELLOW)[*] Building RyuOS ISO natively...$(RESET)\n"
 	@bash scripts/build-iso.sh
+
+docker-iso:
+	@printf "$(YELLOW)[*] Building RyuOS ISO in Docker container...$(RESET)\n"
+	@docker build -t ryuos-builder .
+	@docker run --rm --privileged -v $(PWD):/project ryuos-builder /bin/bash -c "cd /project && make iso"
 
 test:
 	@printf "$(YELLOW)[*] Testing ISO in QEMU...$(RESET)\n"

@@ -3,9 +3,9 @@
 [![CI](https://github.com/SHAURYASANYAL3/RyuOS/actions/workflows/ci.yml/badge.svg)](https://github.com/SHAURYASANYAL3/RyuOS/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**A lightweight, AI-assisted developer Linux distribution for systems programming and experimentation.**
+**A lightweight developer live environment engineered for systems programming and experimentation.**
 
-RyuOS is a highly customized, Debian-based Linux distribution engineered from the ground up for developers, systems engineers, and hobbyists. By stripping away standard bloat and aggressively tuning the initramfs generation, RyuOS is designed to boot quickly, run lean, and provide an immediate playground for C development and systems programming.
+RyuOS is a highly customized, minimal Debian-based live distribution tailored for developers, systems engineers, and hobbyists. By stripping away standard bloat and aggressively tuning the initramfs generation, RyuOS is designed to boot quickly, run lean, and provide an immediate playground for C development and systems programming.
 
 ## Core Philosophy
 1. **Lightweight & Portable**: Operates effectively within a 1GB RAM budget (even during boot decompression).
@@ -52,6 +52,21 @@ RyuShell (`ryush` - Default User Shell)
 To compile the exact same ISO yourself, you will need a Debian/Ubuntu host (or WSL2) with `live-build` and `make` installed.
 
 ### Build Steps
+
+We provide two ways to build RyuOS: natively (requires root) or via Docker (safer, isolates dependencies).
+
+#### Option A: Docker Build (Recommended)
+Building via Docker prevents you from needing to run `live-build` as root on your host machine.
+```bash
+# 1. Clone the repository
+git clone https://github.com/SHAURYASANYAL3/RyuOS.git
+cd RyuOS
+
+# 2. Build the ISO safely inside a container
+make docker-iso
+```
+
+#### Option B: Native Build (Requires Debian/Ubuntu host)
 ```bash
 # 1. Clone the repository
 git clone https://github.com/SHAURYASANYAL3/RyuOS.git
@@ -63,6 +78,7 @@ sudo make setup
 # 3. Compile the ISO (Requires root for chroot execution)
 sudo make iso
 ```
+
 The resulting ISO will be placed in `iso/ryuos-cli.iso`.
 
 ## Development & Contribution
