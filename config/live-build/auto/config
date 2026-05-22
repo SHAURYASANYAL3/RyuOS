@@ -8,7 +8,7 @@ lb config noauto \
   --distribution bookworm \
   --debian-installer false \
   --archive-areas "main contrib" \
-  --bootappend-live "boot=live components console=tty0 username=live" \
+  --bootappend-live "boot=live components console=tty0 username=live init=/lib/systemd/systemd" \
   --bootloader grub \
   --security false \
   --apt-indices false \
