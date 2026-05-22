@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+
+echo "[*] Installing RyuOS native Plymouth theme..."
+
+# Set the theme and definitively rebuild the initramfs
+# The -R flag forces update-initramfs -u inside the chroot
+if command -v plymouth-set-default-theme >/dev/null 2>&1; then
+    plymouth-set-default-theme -R ryuos
+    echo "[+] Plymouth theme set to 'ryuos' and initramfs rebuilt."
+else
+    echo "[-] plymouth-set-default-theme not found! Is plymouth installed?"
+    exit 1
+fi

@@ -66,13 +66,13 @@ chown root:shadow /etc/shadow /etc/gshadow 2>/dev/null || true
 
 # --- Enable boot splash + login fix (symlinks; no systemctl in chroot) ---
 mkdir -p /etc/systemd/system/multi-user.target.wants
-for unit in ryuos-splash.service ryuos-fix-login.service; do
+for unit in ryuos-fix-login.service; do
     if [ -f "/etc/systemd/system/$unit" ]; then
         ln -sf "/etc/systemd/system/$unit" \
             "/etc/systemd/system/multi-user.target.wants/$unit"
     fi
 done
-chmod 755 /usr/local/bin/ryuos-boot-splash /usr/local/bin/ryuos-fix-login 2>/dev/null || true
+chmod 755 /usr/local/bin/ryuos-fix-login 2>/dev/null || true
 
 # Login banner (shown before password prompt)
 cat > /etc/issue << 'ISSUE'

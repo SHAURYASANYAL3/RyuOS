@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=RyuOS Cyberpunk Splash
+Description=A minimal cyberpunk terminal aesthetic boot splash for RyuOS using native rendering
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/ryuos
+ScriptFile=/usr/share/plymouth/themes/ryuos/ryuos.script

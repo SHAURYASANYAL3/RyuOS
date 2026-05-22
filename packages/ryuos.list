@@ -9,6 +9,11 @@ systemd-sysv
 udev
 dbus
 
+# Plymouth Boot Splash
+plymouth
+plymouth-themes
+fonts-liberation
+
 # Essential CLI
 bash
 coreutils

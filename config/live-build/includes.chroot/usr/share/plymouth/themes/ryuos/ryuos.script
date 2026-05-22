@@ -1,0 +1,69 @@
+# RyuOS Native Plymouth Script
+# A minimal cyberpunk boot splash
+
+Window.SetBackgroundTopColor (0, 0, 0);
+Window.SetBackgroundBottomColor (0, 0, 0);
+
+# Set up variables
+screen_width = Window.GetWidth();
+screen_height = Window.GetHeight();
+
+# Animation state
+progress = 0;
+status_text = "Initializing System...";
+
+# Constants
+CYAN_R = 0;
+CYAN_G = 1;
+CYAN_B = 1;
+
+# Text Sprites
+logo_text = "RyuOS v0.1-cli";
+logo_image = Image.Text(logo_text, CYAN_R, CYAN_G, CYAN_B, 1.0, "Courier New 36");
+logo_sprite = Sprite(logo_image);
+
+logo_x = (screen_width / 2) - (logo_image.GetWidth() / 2);
+logo_y = (screen_height / 2) - 100;
+logo_sprite.SetPosition(logo_x, logo_y, 10);
+
+status_sprite = Sprite();
+status_y = (screen_height / 2) + 50;
+
+# Progress Bar
+bar_width = 300;
+bar_height = 10;
+bar_x = (screen_width / 2) - (bar_width / 2);
+bar_y = (screen_height / 2) + 10;
+
+# Draw background of progress bar (dark gray)
+bg_bar = Image.Solid(bar_width, bar_height, 0.2, 0.2, 0.2);
+bg_sprite = Sprite(bg_bar);
+bg_sprite.SetPosition(bar_x, bar_y, 5);
+
+# Draw foreground of progress bar (cyan)
+fg_sprite = Sprite();
+fg_sprite.SetPosition(bar_x, bar_y, 10);
+
+# Plymouth Hooks
+fun progress_callback(duration, new_progress) {
+    progress = new_progress;
+    
+    # Update progress bar width
+    fill_width = bar_width * progress;
+    if (fill_width < 1) {
+        fill_width = 1;
+    }
+    fg_bar = Image.Solid(fill_width, bar_height, CYAN_R, CYAN_G, CYAN_B);
+    fg_sprite.SetImage(fg_bar);
+}
+
+fun message_callback(text) {
+    status_text = text;
+    status_image = Image.Text(status_text, 0.8, 0.8, 0.8, 1.0, "Courier New 14");
+    status_sprite.SetImage(status_image);
+    status_x = (screen_width / 2) - (status_image.GetWidth() / 2);
+    status_sprite.SetPosition(status_x, status_y, 10);
+}
+
+Plymouth.SetBootProgressFunction(progress_callback);
+Plymouth.SetMessageFunction(message_callback);
