@@ -76,16 +76,16 @@ setup_wslg_display() {
     fi
 }
 
-KVM_OPTS=""
+KVM_OPTS=()
 if [ -c /dev/kvm ] && [ -r /dev/kvm ] && [ -w /dev/kvm ]; then
     echo "[+] KVM acceleration enabled."
-    KVM_OPTS="-enable-kvm -cpu host"
+    KVM_OPTS=("-enable-kvm" "-cpu" "host")
 else
     echo "[-] KVM not available — software emulation (slower, first boot may take 2–5 min)."
-    KVM_OPTS="-cpu max"
+    KVM_OPTS=("-cpu" "max")
 fi
 
-DISPLAY_OPTS=""
+DISPLAY_OPTS=()
 case "$DISPLAY_MODE" in
     gui)
         setup_wslg_display
@@ -93,26 +93,26 @@ case "$DISPLAY_MODE" in
             echo "[-] No graphical display. Use --text or --vnc, or run from Windows Terminal with WSLg."
             exit 1
         fi
-        DISPLAY_OPTS="-vga std"
+        DISPLAY_OPTS=("-vga" "std")
         echo "[*] Graphical mode — QEMU window should appear on your Windows desktop."
         ;;
     text)
-        DISPLAY_OPTS="-display curses -vga std"
+        DISPLAY_OPTS=("-display" "curses" "-vga" "std")
         echo "[*] Terminal mode — boot output appears here."
         echo "[*] Exit QEMU: Ctrl+A, then X"
         ;;
     vnc)
-        DISPLAY_OPTS="-vga std -display vnc=127.0.0.1:0"
+        DISPLAY_OPTS=("-vga" "std" "-display" "vnc=127.0.0.1:0")
         echo "[*] VNC mode — on Windows, open a VNC viewer to: 127.0.0.1:5900"
         echo "[*] (TigerVNC / RealVNC / built-in Remote Desktop won't work — use a VNC client)"
         ;;
     auto)
         setup_wslg_display
         if [ -n "${DISPLAY:-}" ] || [ -n "${WAYLAND_DISPLAY:-}" ]; then
-            DISPLAY_OPTS="-vga std"
+            DISPLAY_OPTS=("-vga" "std")
             echo "[+] Graphical mode (WSLg) — check your Windows taskbar for a QEMU window."
         else
-            DISPLAY_OPTS="-display curses -vga std"
+            DISPLAY_OPTS=("-display" "curses" "-vga" "std")
             echo "[*] No GUI display found — using terminal mode."
             echo "[*] Exit QEMU: Ctrl+A, then X  |  For a window: $0 --gui"
         fi
@@ -128,10 +128,10 @@ fi
 QEMU_ARGS=(
     -cdrom "$ISO_PATH"
     -m "$MEM_SIZE"
-    $KVM_OPTS
+    "${KVM_OPTS[@]}"
     -boot d
-    $DISPLAY_OPTS
-    -netdev user,id=net0 -device virtio-net-pci,netdev=net0
+    "${DISPLAY_OPTS[@]}"
+    "-netdev" "user,id=net0" "-device" "virtio-net-pci,netdev=net0"
 )
 
 if [ -n "$KERNEL_APPEND" ]; then

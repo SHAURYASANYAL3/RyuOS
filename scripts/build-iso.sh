@@ -12,7 +12,7 @@ source "$SCRIPT_DIR/lib/common.sh"
 
 log_info() { echo -e "\033[1;34m[*]\033[0m $1"; }
 log_success() { echo -e "\033[1;32m[+]\033[0m $1"; }
-log_error() { echo -e "\033[1;31m[-]\033[0m $1"; >&2; }
+log_error() { echo -e "\033[1;31m[-]\033[0m $1" >&2; }
 
 ensure_isohybrid() {
     if command -v isohybrid >/dev/null 2>&1; then
