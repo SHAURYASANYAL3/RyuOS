@@ -12,4 +12,6 @@ lb config noauto \
   --bootloader grub \
   --security false \
   --apt-indices false \
+  --firmware-chroot false \
+  --firmware-binary false \
   "${@}"
