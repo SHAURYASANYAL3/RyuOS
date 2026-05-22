@@ -1,0 +1,67 @@
+#!/bin/sh
+# 01-low-ram-opts.chroot - Custom optimizations for RyuOS CLI (Low RAM target)
+set -e
+
+echo "[*] Running RyuOS low-RAM optimization hook inside chroot..."
+
+# 1. Optimize Initramfs
+if [ -f /etc/initramfs-tools/initramfs.conf ]; then
+    echo "[+] Configuring minimal initramfs (MODULES=dep, COMPRESS=xz)..."
+    # Change MODULES=most to MODULES=dep
+    sed -i 's/MODULES=most/MODULES=dep/g' /etc/initramfs-tools/initramfs.conf
+    # Change COMPRESS=gzip (or whatever) to COMPRESS=xz
+    sed -i 's/COMPRESS=gzip/COMPRESS=xz/g' /etc/initramfs-tools/initramfs.conf
+    sed -i 's/COMPRESS=zstd/COMPRESS=xz/g' /etc/initramfs-tools/initramfs.conf
+    # Ensure initramfs is rebuilt
+    update-initramfs -u -k all
+fi
+
+# 2. Register Custom Shell
+if [ -f /usr/local/bin/ryush ]; then
+    echo "[+] Registering RyuShell (/usr/local/bin/ryush) in /etc/shells..."
+    if ! grep -q "/usr/local/bin/ryush" /etc/shells; then
+        echo "/usr/local/bin/ryush" >> /etc/shells
+    fi
+    
+    # Set default shell for future user creations
+    if [ -f /etc/default/useradd ]; then
+        sed -i 's|SHELL=/bin/bash|SHELL=/usr/local/bin/ryush|g' /etc/default/useradd
+    fi
+    
+    # Also change root's default shell to ryush
+    chsh -s /usr/local/bin/ryush root
+fi
+
+# 3. Disable Unnecessary systemd Services to save memory
+echo "[+] Disabling non-essential services to save memory..."
+for service in systemd-timesyncd.service apt-daily.timer apt-daily-upgrade.timer e2scrub_all.timer fstrim.timer; do
+    if systemctl is-enabled $service >/dev/null 2>&1; then
+        systemctl disable $service || true
+    fi
+done
+
+# 4. Set Hostname
+echo "ryuos" > /etc/hostname
+# Update /etc/hosts
+if ! grep -q "ryuos" /etc/hosts; then
+    echo "127.0.1.1       ryuos" >> /etc/hosts
+fi
+
+# 5. Create Custom MOTD
+cat > /etc/motd << 'EOF'
+
+ ╔══════════════════════════════════════════════════════╗
+ ║ Welcome to RyuOS v0.1-cli                            ║
+ ║ An ultra-lightweight custom distribution             ║
+ ║ Optimized to run on any PC or laptop!                ║
+ ║                                                      ║
+ ║ Custom Tools Available:                              ║
+ ║   - ryush        : Custom terminal shell             ║
+ ║   - sys-monitor  : C-based system resources monitor   ║
+ ║                                                      ║
+ ║ Type 'help' in RyuShell for command assistance       ║
+ ╚══════════════════════════════════════════════════════╝
+
+EOF
+
+echo "[*] Hook completion successful!"

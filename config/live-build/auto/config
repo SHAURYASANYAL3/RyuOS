@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+
+lb config noauto \
+  --architectures amd64 \
+  --image-type iso-hybrid \
+  --mode debian \
+  --distribution bookworm \
+  --debian-installer false \
+  --archive-areas "main contrib" \
+  --bootappend-live "boot=live components quiet splash console=tty0" \
+  --bootloader grub-pc \
+  --packages "systemd systemd-sysv udev dbus htop vim-tiny nano iproute2 curl wget openssh-client iputils-ping isc-dhcp-client build-essential python3-minimal git busybox" \
+  "${@}"
