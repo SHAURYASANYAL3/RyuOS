@@ -10,7 +10,6 @@ WSL_BUILD_DIR="/root/ryuos-build"
 # Verify we are running inside WSL/Linux
 if ! grep -q -i microsoft /proc/version; then
     echo "[-] This script is optimized to run inside WSL."
-    # We will still proceed if run on native Linux
 fi
 
 echo "[*] Preparing WSL build environment in $WSL_BUILD_DIR..."
@@ -24,6 +23,20 @@ cp -R "$HOST_DIR"/* "$WSL_BUILD_DIR"/
 
 # Change to the live-build directory inside WSL build dir
 cd "$WSL_BUILD_DIR/config/live-build"
+
+echo "[*] Organizing configuration files into correct live-build structure..."
+# Create configuration target folders
+mkdir -p config/hooks config/includes.chroot config/package-lists
+
+# Copy overlay files
+if [ -d includes.chroot ]; then
+    cp -R includes.chroot/* config/includes.chroot/
+fi
+
+# Copy hooks
+if [ -d hooks ]; then
+    cp -R hooks/* config/hooks/
+fi
 
 echo "[*] Running live-build configuration..."
 lb clean --all

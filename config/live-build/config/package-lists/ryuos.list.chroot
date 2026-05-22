@@ -1,0 +1,17 @@
+systemd
+systemd-sysv
+udev
+dbus
+htop
+vim-tiny
+nano
+iproute2
+curl
+wget
+openssh-client
+iputils-ping
+isc-dhcp-client
+build-essential
+python3-minimal
+git
+busybox
