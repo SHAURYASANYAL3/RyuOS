@@ -60,7 +60,7 @@ fi
 ensure_isohybrid
 
 log_info "Compiling custom tools (RyuShell, sys-monitor)..."
-bash "$SCRIPT_DIR/build-tools.sh"
+make -C "$HOST_DIR/src"
 
 log_info "Preparing build environment..."
 run_root rm -rf "$WSL_BUILD_DIR"
