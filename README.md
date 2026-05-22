@@ -37,6 +37,22 @@ RyuOS abstracts away standard OS cruft while retaining the rock-solid Debian Boo
 
 ![RyuOS Architecture Diagram](branding/architecture_diagram.png)
 
+## Screenshots Showcase
+
+Here are some live screenshots of RyuOS running in QEMU:
+
+### Extremely Low RAM Footprint
+*Showing RyuOS idling at just ~62MB of RAM usage within a 1GB environment.*
+![htop RAM Usage](branding/screenshots/htop_usage.png)
+
+### Clean Boot & Login Sequence
+*The initialization process loading the custom services and dropping to the login prompt.*
+![Boot Sequence](branding/screenshots/boot_sequence.png)
+
+### Developer Environment
+*The pre-configured GNU Bash terminal ready for systems programming.*
+![Terminal Environment](branding/screenshots/terminal_env.png)
+
 ## Building from Source
 
 To compile the exact same ISO yourself, you will need a Debian/Ubuntu host (or WSL2) with `live-build` and `make` installed.
