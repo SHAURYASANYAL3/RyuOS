@@ -6,9 +6,7 @@ echo "[*] Running RyuOS low-RAM optimization hook inside chroot..."
 
 # 1. Optimize Initramfs
 if [ -f /etc/initramfs-tools/initramfs.conf ]; then
-    echo "[+] Configuring minimal initramfs (MODULES=dep, COMPRESS=xz)..."
-    # Change MODULES=most to MODULES=dep
-    sed -i 's/MODULES=most/MODULES=dep/g' /etc/initramfs-tools/initramfs.conf
+    echo "[+] Configuring minimal initramfs (COMPRESS=xz)..."
     # Change COMPRESS=gzip (or whatever) to COMPRESS=xz
     sed -i 's/COMPRESS=gzip/COMPRESS=xz/g' /etc/initramfs-tools/initramfs.conf
     sed -i 's/COMPRESS=zstd/COMPRESS=xz/g' /etc/initramfs-tools/initramfs.conf
