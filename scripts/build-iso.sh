@@ -41,28 +41,41 @@ fi
 echo "[*] Running live-build configuration..."
 lb clean --all
 lb config
+echo "[*] Ensuring syslinux-utils is installed (for isohybrid)..."
+apt-get install -y syslinux-utils >/dev/null 2>&1 || true
 
 echo "[*] Starting live-build compile (this can take 10-20 mins on first run)..."
 lb build 2>&1 | tee build.log
+BUILD_EXIT=$?
 
-# Check if the build was successful
-if [ -f "live-image-amd64.iso" ]; then
-    echo "[+] Build successful inside WSL!"
+# Search for the ISO output — live-build 3.x uses various naming conventions
+ISO_FILE=""
+for candidate in live-image-amd64.iso live-image-amd64.hybrid.iso binary.hybrid.iso binary.iso chroot/binary.hybrid.iso; do
+    if [ -f "$candidate" ]; then
+        ISO_FILE="$candidate"
+        break
+    fi
+done
+
+if [ -n "$ISO_FILE" ]; then
+    echo "[+] Build successful inside WSL! ISO found: $ISO_FILE"
     
     # Ensure the output directory on Windows host exists
     mkdir -p "$HOST_DIR/ISO"
     
     # Copy the finished ISO and log back to Windows host
-    cp live-image-amd64.iso "$HOST_DIR/ISO/ryuos-cli.iso"
-    cp build.log "$HOST_DIR/build.log"
+    cp "$ISO_FILE" "$HOST_DIR/ISO/ryuos-cli.iso"
+    cp build.log "$HOST_DIR/build.log" || true
     
     echo "[+] Copied ISO to: $HOST_DIR/ISO/ryuos-cli.iso"
     echo "[+] Copied build log to: $HOST_DIR/build.log"
+    echo "[+] ISO size: $(du -h "$HOST_DIR/ISO/ryuos-cli.iso" | cut -f1)"
 else
     # Copy build log back for troubleshooting even if failed
     if [ -f build.log ]; then
         cp build.log "$HOST_DIR/build.log" || true
     fi
-    echo "[-] Build failed. Check build.log in host."
+    echo "[-] Build failed. No ISO file found. Check build.log in host."
     exit 1
 fi
+
