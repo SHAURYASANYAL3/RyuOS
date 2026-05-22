@@ -4,15 +4,51 @@ set -e
 
 echo "[*] Running RyuOS low-RAM optimization hook inside chroot..."
 
-# 1. Optimize Initramfs — keep gzip (low decompression RAM overhead)
-# xz produces smaller files but needs too much RAM to decompress at boot
+# 1. Optimize Initramfs — use MODULES=list for extreme size reduction
 if [ -f /etc/initramfs-tools/initramfs.conf ]; then
-    echo "[+] Optimizing initramfs (keeping gzip, stripping unnecessary modules)..."
-    # Ensure compression is gzip (lowest RAM overhead for decompression)
+    echo "[+] Optimizing initramfs (MODULES=list, keeping gzip)..."
+    sed -i 's/MODULES=most/MODULES=list/g' /etc/initramfs-tools/initramfs.conf
     sed -i 's/COMPRESS=xz/COMPRESS=gzip/g' /etc/initramfs-tools/initramfs.conf
     sed -i 's/COMPRESS=zstd/COMPRESS=gzip/g' /etc/initramfs-tools/initramfs.conf
     sed -i 's/COMPRESS=lz4/COMPRESS=gzip/g' /etc/initramfs-tools/initramfs.conf
 fi
+
+# Define minimal required modules for booting Live ISO on most PCs + QEMU
+cat > /etc/initramfs-tools/modules << 'EOF'
+# Filesystems and loop/overlay
+squashfs
+overlay
+loop
+isofs
+vfat
+nls_utf8
+nls_cp437
+nls_ascii
+
+# Storage and block devices
+ahci
+libata
+ata_piix
+ata_generic
+sd_mod
+sr_mod
+
+# USB storage
+usb-storage
+xhci-hcd
+xhci-pci
+ehci-hcd
+ehci-pci
+uhci-hcd
+ohci-hcd
+
+# QEMU / Virtualization support
+virtio_pci
+virtio_blk
+virtio_scsi
+virtio_ring
+virtio_net
+EOF
 
 # Strip unnecessary locale files and docs to reduce filesystem size
 echo "[+] Removing unnecessary locale and doc files to save space..."
@@ -32,13 +68,7 @@ if [ -f /usr/local/bin/ryush ]; then
         echo "/usr/local/bin/ryush" >> /etc/shells
     fi
     
-    # Set default shell for future user creations
-    if [ -f /etc/default/useradd ]; then
-        sed -i 's|SHELL=/bin/bash|SHELL=/usr/local/bin/ryush|g' /etc/default/useradd
-    fi
-    
-    # Also change root's default shell to ryush
-    chsh -s /usr/local/bin/ryush root
+    # Shell assignment for root/live is done in 02-create-users.chroot
 fi
 
 # 3. Disable Unnecessary systemd Services to save memory
