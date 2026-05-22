@@ -67,6 +67,7 @@ run_root rm -rf "$WSL_BUILD_DIR"
 mkdir -p "$WSL_BUILD_DIR"
 
 log_info "Mirroring core configurations to build directory..."
+mkdir -p "$WSL_BUILD_DIR/config/live-build"
 cp -R "$HOST_DIR/config/live-build/." "$WSL_BUILD_DIR/config/live-build/"
 
 if [[ "$HOST_DIR" == /mnt/* ]]; then
