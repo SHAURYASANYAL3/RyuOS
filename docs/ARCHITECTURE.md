@@ -1,145 +1,28 @@
-# RyuOS Architecture
+# RyuOS Architecture & Design Decisions
 
-## System Overview
+This document outlines the high-level architecture of RyuOS and the rationale behind critical engineering decisions.
 
-RyuOS is built as a layered system, with each layer providing specific functionality.
+## Build Architecture
 
-```
-┌─────────────────────────────────────┐
-│    User Environment (Shell)         │
-├─────────────────────────────────────┤
-│    System Tools (systemd, coreutils) │
-├─────────────────────────────────────┤
-│    Linux Kernel (6.x - Custom)      │
-├─────────────────────────────────────┤
-│    GRUB2 Bootloader                 │
-└─────────────────────────────────────┘
-```
+RyuOS uses Debian's `live-build` framework. However, the repository abstracts away the complex `config/live-build/` tree by storing components modularly in the root directory:
+- `hooks/`: Shell scripts injected into the chroot during build.
+- `packages/`: Defines standard APT packages to install.
+- `src/`: Custom C tools that are compiled and dynamically injected.
 
-## Layer Breakdown
+The `Makefile` orchestrates this by copying everything into the correct staging structure before calling `lb build`.
 
-### 1. Bootloader (GRUB2)
-- **Purpose**: Load kernel from disk, handle boot options
-- **Customization**: Custom theme, timeout, splash screen
-- **Files**: `config/grub/grub.cfg`, `config/live-build/includes.chroot/boot/grub/`
+## The Initramfs Optimization Hack
 
-### 2. Kernel (Linux 6.x)
-- **Purpose**: Core OS functionality, hardware abstraction
-- **Customization**: Minimal drivers, optimizations, custom syscalls (future)
-- **Configuration**: `config/kernel/linux-6.6/.config`
-- **Build**: Custom compilation for boot time and size optimization
+**The Problem**: Decompressing a modern Linux 6.x initramfs into a 128MB RAM environment frequently causes a kernel panic (`System is deadlocked on memory`).
+Setting `MODULES=dep` breaks Live ISO booting because the filesystem relies on overlay and loop mounts. Setting `MODULES=list` (and defining only essential modules) strips out Debian `live-boot` integration logic required to actually mount the squashfs `/`.
 
-### 3. Init System (systemd)
-- **Purpose**: Start system services, manage daemons
-- **Customization**: Disable unused services, add RyuOS-specific units
-- **Files**: `config/live-build/includes.chroot/etc/systemd/system/`
+**The Solution**: RyuOS employs an experimental build hook (`hooks/01-low-ram-opts.chroot`).
+1. We set `MODULES=most` and `COMPRESS=gzip` to ensure `live-boot` functions properly without the massive RAM overhead of `xz` decompression.
+2. Before `update-initramfs` runs in the build chroot, we temporarily **move** heavy drivers (`drivers/gpu`, `sound`, `net/wireless`) completely out of `/lib/modules/`.
+3. The initramfs is generated. It includes all necessary core drivers but excludes the multi-megabyte graphics and audio stacks, keeping the generated `initrd` file under 25MB.
+4. After generation, the heavy drivers are moved back into `/lib/modules/` so they remain available on the final booted system.
 
-### 4. System Tools
-- **Core**: coreutils (ls, cp, mv, rm), util-linux (mount, fdisk), bash
-- **Development**: gcc, make, git, python3
-- **Tools**: curl, wget, vim, htop
+## RyuShell (`ryush`) Fallback Mechanism
 
-### 5. User Shell
-- **Current**: Bash (from Debian)
-- **Future**: RyuShell (custom shell in C)
-- **Files**: `src/shell/ryush.c`
-
-## Build Pipeline
-
-```
-Source Code (git)
-      ↓
-Live-build Configuration
-      ↓
-Debian Package Selection
-      ↓
-Kernel Compilation
-      ↓
-Chroot Environment
-      ↓
-ISO Generation
-      ↓
-Output: ryuos-*.iso
-```
-
-## Customization Points
-
-| Layer | Method | Effort | Files |
-|-------|--------|--------|-------|
-| Bootloader | GRUB config + theme | 1 day | `config/live-build/includes.chroot/boot/grub/` |
-| Kernel | menuconfig, .config | 3-5 days | `config/kernel/linux-6.6/.config` |
-| Init | systemd units | 1-2 days | `config/live-build/includes.chroot/etc/systemd/` |
-| Tools | live-build packages | 1 day | `config/live-build/auto/config` |
-| Shell | Custom C program | 1-2 weeks | `src/shell/ryush.c` |
-
-## Package Selection
-
-RyuOS includes ~250 packages:
-
-**Essential**:
-- systemd, init-system-helpers
-- coreutils, util-linux, bash
-- libc, libssl, libz
-
-**Development**:
-- build-essential (gcc, make, binutils)
-- git, python3, python3-pip
-- linux-headers
-
-**Tools**:
-- curl, wget, htop, vim-tiny
-- openssh-client, net-tools
-- man, less
-
-**Excluded** (to reduce size):
-- Anything GUI (X11, GTK, Qt)
-- Sound (ALSA, PulseAudio)
-- Bluetooth, WiFi drivers (only for later)
-- Documentation, localizations
-
-## Boot Sequence
-
-1. **BIOS/UEFI** → Initialize hardware
-2. **GRUB2** → Display boot menu, load kernel
-3. **Kernel** → Initialize CPU, memory, devices
-4. **Initrd** → Mount temporary filesystem
-5. **systemd** → Start services, reach login prompt
-6. **User Shell** → Interactive bash prompt
-
-**Total time**: ~12 seconds
-
-## Performance Targets
-
-| Metric | Target | Method |
-|--------|--------|--------|
-| Boot time | <15s | Disable unused drivers, enable preemption |
-| ISO size | <400MB | Remove bloat, compress modules |
-| Memory footprint | <200MB | Careful package selection, no GUI |
-| Package count | <300 | Minimal viable set for dev environment |
-
-## Future Enhancements
-
-- **Custom Kernel Modules**: Device drivers built out-of-tree
-- **Custom Syscalls**: System calls tailored to RyuOS
-- **Lightweight GUI**: Openbox + X11 (week 11-12)
-- **Security Hardening**: AppArmor/SELinux, firewalling
-- **Custom Shell**: RyuShell in C (week 6)
-- **AI Terminal Assistant**: Python-based helper (week 13)
-
-## Security Model
-
-- Minimal attack surface (fewer packages)
-- Kernel hardening (SMACK, AppArmor)
-- File permissions properly configured
-- No unnecessary services running
-
-## Extensibility
-
-RyuOS is designed to be extended:
-
-- **New tools**: Add to `src/`, compile, integrate
-- **Kernel changes**: Modify `.config`, rebuild, test in QEMU
-- **Package additions**: Update live-build config
-- **Custom services**: Add systemd units
-
-See [KERNEL.md](KERNEL.md) for kernel-specific details.
+By default, RyuOS sets the login shell to `/usr/local/bin/ryush`. 
+Because custom C shells can theoretically segfault or crash, RyuOS relies on the native systemd `getty` configurations. If `ryush` crashes on `tty1`, standard Linux fallback behavior allows the user to switch to `tty2` (Ctrl+Alt+F2) to access a standard login prompt.
