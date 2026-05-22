@@ -4,51 +4,28 @@ set -e
 
 echo "[*] Running RyuOS low-RAM optimization hook inside chroot..."
 
-# 1. Optimize Initramfs — use MODULES=list for extreme size reduction
+# 1. Optimize Initramfs — use MODULES=most but temporarily hide heavy drivers
 if [ -f /etc/initramfs-tools/initramfs.conf ]; then
-    echo "[+] Optimizing initramfs (MODULES=list, keeping gzip)..."
-    sed -i 's/MODULES=most/MODULES=list/g' /etc/initramfs-tools/initramfs.conf
+    echo "[+] Optimizing initramfs (MODULES=most, keeping gzip)..."
+    sed -i 's/MODULES=list/MODULES=most/g' /etc/initramfs-tools/initramfs.conf
     sed -i 's/COMPRESS=xz/COMPRESS=gzip/g' /etc/initramfs-tools/initramfs.conf
     sed -i 's/COMPRESS=zstd/COMPRESS=gzip/g' /etc/initramfs-tools/initramfs.conf
     sed -i 's/COMPRESS=lz4/COMPRESS=gzip/g' /etc/initramfs-tools/initramfs.conf
 fi
 
-# Define minimal required modules for booting Live ISO on most PCs + QEMU
-cat > /etc/initramfs-tools/modules << 'EOF'
-# Filesystems and loop/overlay
-squashfs
-overlay
-loop
-isofs
-vfat
-nls_utf8
-nls_cp437
-nls_ascii
+echo "" > /etc/initramfs-tools/modules
 
-# Storage and block devices
-ahci
-libata
-ata_piix
-ata_generic
-sd_mod
-sr_mod
-
-# USB storage
-usb-storage
-xhci-hcd
-xhci-pci
-ehci-hcd
-ehci-pci
-uhci-hcd
-ohci-hcd
-
-# QEMU / Virtualization support
-virtio_pci
-virtio_blk
-virtio_scsi
-virtio_ring
-virtio_net
-EOF
+# Temporarily move heavy drivers so update-initramfs doesn't include them
+echo "[+] Temporarily hiding heavy drivers (GPU, Sound, Media) to shrink initramfs..."
+mkdir -p /tmp/heavy_drivers
+for kdir in /lib/modules/*/kernel; do
+    if [ -d "$kdir" ]; then
+        [ -d "$kdir/drivers/gpu" ] && mv "$kdir/drivers/gpu" /tmp/heavy_drivers/gpu
+        [ -d "$kdir/sound" ] && mv "$kdir/sound" /tmp/heavy_drivers/sound
+        [ -d "$kdir/drivers/media" ] && mv "$kdir/drivers/media" /tmp/heavy_drivers/media
+        [ -d "$kdir/drivers/net/wireless" ] && mv "$kdir/drivers/net/wireless" /tmp/heavy_drivers/wireless
+    fi
+done
 
 # Strip unnecessary locale files and docs to reduce filesystem size
 echo "[+] Removing unnecessary locale and doc files to save space..."
@@ -58,8 +35,21 @@ rm -rf /usr/share/man/??/ /usr/share/man/??_*/ 2>/dev/null || true
 
 # Rebuild initramfs with optimized settings
 if [ -f /etc/initramfs-tools/initramfs.conf ]; then
+    echo "[+] Rebuilding initramfs..."
     update-initramfs -u -k all
 fi
+
+# Restore heavy drivers back to the root filesystem
+echo "[+] Restoring heavy drivers..."
+for kdir in /lib/modules/*/kernel; do
+    if [ -d "$kdir" ]; then
+        [ -d "/tmp/heavy_drivers/gpu" ] && mv /tmp/heavy_drivers/gpu "$kdir/drivers/gpu"
+        [ -d "/tmp/heavy_drivers/sound" ] && mv /tmp/heavy_drivers/sound "$kdir/sound"
+        [ -d "/tmp/heavy_drivers/media" ] && mv /tmp/heavy_drivers/media "$kdir/drivers/media"
+        [ -d "/tmp/heavy_drivers/wireless" ] && mv /tmp/heavy_drivers/wireless "$kdir/drivers/net/wireless"
+    fi
+done
+rm -rf /tmp/heavy_drivers
 
 # 2. Register Custom Shell
 if [ -f /usr/local/bin/ryush ]; then
