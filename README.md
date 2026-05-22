@@ -35,17 +35,7 @@ You will immediately drop into **RyuShell** (`ryush`). Try running `sys-monitor`
 
 RyuOS abstracts away standard OS cruft while retaining the rock-solid Debian Bookworm kernel.
 
-```
-GRUB2 (Bootloader)
-    ↓
-Linux 6.1 Kernel (Debian Bookworm)
-    ↓
-Initramfs (Optimized with heavy-driver stripping & gzip)
-    ↓
-systemd (Init)
-    ↓
-RyuShell (`ryush` - Default User Shell)
-```
+![RyuOS Architecture Diagram](branding/architecture_diagram.png)
 
 ## Building from Source
 
