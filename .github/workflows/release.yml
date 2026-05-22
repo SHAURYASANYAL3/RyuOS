@@ -1,0 +1,43 @@
+name: Automated Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger on tags like v1.0, v0.2
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y live-build debootstrap squashfs-tools syslinux-utils genisoimage make gcc
+
+      - name: Compile Custom Tools
+        run: make tools
+
+      - name: Build RyuOS ISO
+        run: |
+          # We use sudo for make iso since live-build needs root
+          sudo make iso
+
+      - name: Generate Checksums
+        run: |
+          cd iso/
+          sha256sum ryuos-cli.iso > ryuos-cli.iso.sha256
+
+      - name: Release to GitHub
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            iso/ryuos-cli.iso
+            iso/ryuos-cli.iso.sha256
+          draft: false
+          prerelease: false
+          generate_release_notes: true

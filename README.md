@@ -1,91 +1,81 @@
-# RyuOS: Ultra-Lightweight Custom Linux Distribution
+# RyuOS: Systems Engineering & Development Distribution
 
+[![CI](https://github.com/SHAURYASANYAL3/RyuOS/actions/workflows/ci.yml/badge.svg)](https://github.com/SHAURYASANYAL3/RyuOS/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![GitHub Stars](https://img.shields.io/github/stars/SHAURYASANYAL3/RyuOS)](https://github.com/SHAURYASANYAL3/RyuOS/stargazers)
 
-A custom, extremely lightweight, developer-focused Linux distribution built entirely from scratch. Optimized to run on practically any PC or laptop, with a base CLI version capable of booting seamlessly with highly constrained hardware (128MB RAM targets).
+**A lightweight, AI-assisted developer Linux distribution for systems programming and experimentation.**
 
-## Features
+RyuOS is a highly customized, Debian-based Linux distribution engineered from the ground up for developers, systems engineers, and hobbyists. By stripping away standard bloat and aggressively tuning the initramfs generation, RyuOS is designed to boot quickly, run lean, and provide an immediate playground for C development and systems programming.
 
-- 🚀 **Lightning Fast Boot**: Boots directly into a custom shell in seconds.
-- 📦 **Ultra Minimal Footprint**: ~300MB ISO, highly stripped initramfs environment.
-- 🐚 **Custom RyuShell**: A bespoke C-based terminal shell (`ryush`) set as the default login.
-- 📊 **Custom System Tools**: Includes a native C-based `sys-monitor` for hardware telemetry.
-- 🧠 **Smart Initramfs Tuning**: Uses `MODULES=most` with temporary heavy driver stripping and `gzip` compression to achieve successful boots in <1GB RAM scenarios while preserving `live-boot` integration.
-- 🎨 **Custom Branding**: Distinctive boot sequence and custom Message of the Day (MOTD) ASCII art.
-- 🛠️ **Developer Ready**: Comes pre-configured with `python3`, `git`, `gcc`, `make`, `htop`, `nano`, and essential networking utilities (`curl`, `wget`, `iproute2`).
+## Core Philosophy
+1. **Lightweight & Portable**: Operates effectively within a 1GB RAM budget (even during boot decompression).
+2. **Developer First**: Pre-configured with essential C build tools (`gcc`, `make`), `python3`, and standard networking utilities.
+3. **Systems Experimentation**: Features a custom C-based shell (`ryush`) and native hardware monitor (`sys-monitor`) injected directly into the Live ISO.
+4. **Reproducible**: Engineered with a strict `Makefile` and `live-build` pipeline, ensuring identical ISO generation across environments.
 
 ## Quick Start
 
-### 1. Download the Latest ISO
-Download the `ryuos-cli.iso` from the `ISO/` directory or the latest release page (once published).
+### 1. Download Latest ISO
+Download the `ryuos-cli.iso` from the latest [GitHub Release](https://github.com/SHAURYASANYAL3/RyuOS/releases).
 
-### 2. Boot in QEMU (Recommended for Testing)
-Run the provided script to test it locally. (Requires QEMU installed):
+### 2. Boot in QEMU (Recommended)
+You can easily spin up the environment locally using the provided testing script. (Requires QEMU installed).
 ```bash
-# Boot with 1GB RAM in graphical mode (or VNC)
-./scripts/qemu-test.sh ISO/ryuos-cli.iso 1024
+# Boot the ISO with 1024MB RAM and VNC enabled
+./scripts/qemu-test.sh iso/ryuos-cli.iso 1024 --vnc
 ```
-_Note: If you run into memory lockups during initramfs decompression, allocate at least 1024MB RAM._
 
 ### 3. Login
 - **Username:** `user`
 - **Password:** `live`
 
-## Architecture
+You will immediately drop into **RyuShell** (`ryush`). Try running `sys-monitor` to see the native telemetry tool in action!
 
-RyuOS is built in layers using Debian `live-build`:
+## Architecture Overview
+
+RyuOS abstracts away standard OS cruft while retaining the rock-solid Debian Bookworm kernel.
 
 ```
 GRUB2 (Bootloader)
     ↓
-Linux 6.1 Kernel (Debian Bookworm base)
+Linux 6.1 Kernel (Debian Bookworm)
     ↓
-systemd (Init System - heavily stripped)
+Initramfs (Optimized with heavy-driver stripping & gzip)
+    ↓
+systemd (Init)
     ↓
 RyuShell (`ryush` - Default User Shell)
-    ↓
-User Environment (Custom C tools, Python3, Git)
 ```
 
 ## Building from Source
 
-### Prerequisites
-- Debian or Ubuntu host (or WSL2 running Debian/Ubuntu)
-- At least 4GB RAM to execute the build
-- ~10GB free disk space
-- `live-build`, `debootstrap`, `squashfs-tools`, `syslinux-utils`, `qemu-system-x86`
+To compile the exact same ISO yourself, you will need a Debian/Ubuntu host (or WSL2) with `live-build` and `make` installed.
 
 ### Build Steps
 ```bash
+# 1. Clone the repository
 git clone https://github.com/SHAURYASANYAL3/RyuOS.git
 cd RyuOS
-./scripts/build-iso.sh
+
+# 2. Setup the dependencies (Requires root)
+sudo make setup
+
+# 3. Compile the ISO (Requires root for chroot execution)
+sudo make iso
 ```
+The resulting ISO will be placed in `iso/ryuos-cli.iso`.
 
-The compiled ISO will be placed in the `ISO/` directory as `ryuos-cli.iso`.
+## Development & Contribution
 
-### Custom Development
-If you modify the custom C tools in `src/`, they will be automatically recompiled and injected into the live filesystem during the build process thanks to `scripts/build-tools.sh`.
+We welcome contributions! 
+- Run `make lint` to ensure your bash scripts pass ShellCheck.
+- Run `make test` to verify your local QEMU build works.
+- Check out our [Roadmap](docs/roadmap.md) to see upcoming features (like AI Terminal integrations).
+- Read our [Security Guidelines](docs/security.md) before submitting a PR.
 
-## Directory Structure
-
-```
-RyuOS/
-├── config/            # Debian live-build configurations & hooks
-│   └── live-build/    # Package lists, custom initramfs hooks
-├── ISO/               # Directory for built ISO artifacts
-├── scripts/           # Build scripts (`build-iso.sh`, `qemu-test.sh`)
-├── src/               # Custom C applications (RyuShell, sys-monitor)
-├── README.md          # This file
-└── Makefile           # Project makefile
-```
-
-## Author
-
-**SHAURYASANYAL3**
-Built with passion for systems programming, operating system design, and lightweight computing.
+## Known Limitations
+- The current ISO requires at least 1024MB RAM during the initial boot phase to decompress the Live Filesystem (SquashFS). Post-boot RAM usage is significantly lower.
+- Graphics drivers (GPU/Media) are temporarily stripped during initramfs generation to save space, but are restored in the final filesystem.
 
 ## License
-
 MIT License - see [LICENSE](LICENSE)

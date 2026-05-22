@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ShellCheck
+        run: sudo apt-get install -y shellcheck
+      - name: Lint Shell Scripts
+        run: make lint
+
+  build-tools:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Build Dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential gcc make
+      - name: Compile Custom Tools
+        run: make tools
+      - name: Verify Tools Built
+        run: |
+          test -x build-artifacts/ryush
+          test -x build-artifacts/sys-monitor

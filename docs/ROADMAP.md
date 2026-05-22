@@ -1,163 +1,40 @@
 # RyuOS Development Roadmap
 
-## Current Status: Phase 1 (Foundation)
+This document outlines the strategic vision and upcoming milestones for the RyuOS project. 
 
-### v0.1 - Alpha (Week 2)
-- [x] Bootable ISO
-- [x] Live-build configuration
-- [x] QEMU testing
-- [x] GitHub repository
+## Phase 1: Foundation (Completed ✅)
+- **Goal**: Build a bare-minimum, bootable ISO from scratch based on Debian Bookworm.
+- **Milestones**:
+  - Setup `live-build` configuration.
+  - Optimize initramfs (`MODULES=most` with heavy driver stripping) for <1GB RAM boot support.
+  - Implement a basic C-based shell (`ryush`).
+  - Implement a custom C-based hardware monitor (`sys-monitor`).
+  - Establish Makefile and CI/CD pipelines.
 
-### v0.2 - Branding (Week 3)
-- [x] Custom GRUB theme
-- [x] ASCII art splash screen
-- [x] Custom /etc/motd
-- [x] Branded boot sequence
+## Phase 2: Core Developer Tooling (Current 🔄)
+- **Goal**: Expand the native command-line utilities and improve developer ergonomics.
+- **Milestones**:
+  - Add standard library functions to `ryush` (piping, redirections).
+  - Pre-configure an advanced dotfile setup (`.bashrc`, `.vimrc`) for the `user` profile.
+  - Expand `sys-monitor` to show disk I/O and network telemetry.
+  - Implement basic automated test suites (`tests/run-tests.sh`).
 
-### v0.3 - Custom Kernel (Week 4-5)
-- [ ] Kernel compilation from source
-- [ ] Optimized .config
-- [ ] Boot time measurement
-- [ ] Custom kernel integration
+## Phase 3: Graphical Environment (Planned ⏳)
+- **Goal**: Introduce an extremely lightweight GUI while maintaining the low-resource footprint.
+- **Milestones**:
+  - Integrate a minimal Wayland compositor (e.g., Sway or Labwc) or X11 WM (e.g., Openbox).
+  - Create a custom C-based status bar and application launcher.
+  - Ensure the entire GUI system operates within a 2GB RAM budget.
 
-### v0.4 - Lightweight (Week 6)
-- [ ] Package optimization (<400MB)
-- [ ] Minimal services
-- [ ] Network configuration
-- [ ] Custom init scripts
+## Phase 4: AI Assistant Integration (Experimental 🧪)
+- **Goal**: Introduce local, terminal-based AI tooling for systems administration.
+- **Milestones**:
+  - Provide a lightweight CLI tool to interact with cloud LLMs (via API) directly from `ryush`.
+  - Explore compiling small, highly quantized local models (e.g., Llama 3 8B) for native execution if hardware allows.
 
-## Phase 2: Tools & Features (Weeks 7-10)
+---
 
-### v0.5 - System Tools
-- [ ] System monitor tool (C)
-- [ ] Package manager wrapper
-- [ ] Custom documentation
-- [ ] GitHub Actions CI/CD
-
-### v0.6 - Development Environment
-- [ ] Dev tools pre-installed
-- [ ] Build environment
-- [ ] Git configuration
-- [ ] Python environment
-
-### v0.7 - Security
-- [ ] Firewall rules
-- [ ] User account management
-- [ ] File permissions audit
-- [ ] Basic hardening
-
-## Phase 3: Advanced Features (Weeks 11-14)
-
-### v0.8 - Graphical Environment
-- [ ] Lightweight GUI (Openbox)
-- [ ] X11 support
-- [ ] Basic applications
-- [ ] Display manager
-
-### v0.9 - AI & Enhancement
-- [ ] AI terminal assistant
-- [ ] Enhanced shell features
-- [ ] System monitoring GUI
-- [ ] Performance optimization
-
-### v1.0 - Release Candidate
-- [ ] Complete documentation
-- [ ] Comprehensive testing
-- [ ] Security audit
-- [ ] Performance benchmarks
-- [ ] Official release
-
-## Phase 4: Mature Features (Post-v1.0)
-
-### v1.1 - Stability & Polish
-- [ ] Bug fixes and patches
-- [ ] User feedback incorporation
-- [ ] Performance tuning
-- [ ] Documentation improvements
-
-### v1.2 - Extended Tools
-- [ ] Advanced system utilities
-- [ ] Multimedia support (optional)
-- [ ] Cloud integration
-- [ ] Container support
-
-### v2.0 - Custom Everything
-- [ ] Custom shell (RyuShell)
-- [ ] Custom package manager
-- [ ] Custom boot sequence
-- [ ] Custom init system (potential)
-
-## Feature Priorities
-
-### Must Have (v0.1+)
-- Bootable system
-- Basic CLI
-- Networking
-- Package management
-
-### Should Have (v0.5+)
-- System monitoring
-- Development tools
-- Documentation
-- CI/CD automation
-
-### Nice to Have (v1.0+)
-- GUI environment
-- AI assistant
-- Custom shell
-- Performance tools
-
-### Future Exploration (v2.0+)
-- Custom kernel modules
-- Custom syscalls
-- Kernel-level optimizations
-- Real-time capabilities
-
-## Timeline
-
-```
-Week 1  ███░░░░░░░ Setup & Learning
-Week 2  ████░░░░░░ First Bootable ISO
-Week 3  █████░░░░░ Branding & Polish
-Week 4-5 ██████░░░░ Custom Kernel
-Week 6  ███████░░░ Lightweight
-Week 7-10 ████████░░ Tools & Features
-Week 11-14 █████████░ Advanced Features
-Week 15-16 ██████████ Polish & Release
-```
-
-## Milestones
-
-| Milestone | Date | Deliverable |
-|-----------|------|-------------|
-| Alpha Release | Week 2 | Bootable v0.1 ISO |
-| Branded Release | Week 3 | v0.2 ISO with branding |
-| Custom Kernel | Week 5 | v0.3 ISO with optimized kernel |
-| Lightweight | Week 6 | v0.4 ISO <400MB |
-| Tools Complete | Week 10 | v0.5 with custom tools |
-| Advanced Features | Week 14 | v0.9 near-complete |
-| Release | Week 16 | v1.0 production-ready |
-
-## Success Criteria
-
-### For v1.0 Release
-- [ ] Boots in <15 seconds
-- [ ] ISO size <450MB
-- [ ] 50+ GitHub commits
-- [ ] Complete documentation
-- [ ] Passes automated tests
-- [ ] Security audit complete
-- [ ] Demo video available
-- [ ] Case study written
-
-### For Portfolio
-- [ ] GitHub stars >50
-- [ ] Used by others
-- [ ] Press mentions (optional)
-- [ ] Speaking opportunity (optional)
-
-## Get Involved
-
-Interested in contributing? See [CONTRIBUTING.md](../CONTRIBUTING.md)
-
-Latest progress: Check [GitHub Issues](https://github.com/YOUR_USERNAME/ryuos/issues)
+## Long-term Vision & Priorities
+1. **Maintainability**: Ensure code remains readable, heavily documented, and standard.
+2. **Minimalism**: Avoid feature creep. Every package added to the ISO must justify its size.
+3. **Reproducibility**: Ensure anyone can clone the repo and compile the exact same ISO with a single `make iso` command.
