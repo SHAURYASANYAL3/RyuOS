@@ -10,4 +10,5 @@ lb config noauto \
   --archive-areas "main contrib" \
   --bootappend-live "boot=live components quiet splash console=tty0" \
   --bootloader grub \
+  --security false \
   "${@}"
