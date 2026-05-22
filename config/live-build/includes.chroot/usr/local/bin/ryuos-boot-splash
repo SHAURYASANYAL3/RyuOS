@@ -1,5 +1,6 @@
 #!/bin/bash
-# RyuOS ASCII boot animation — runs once on first boot
+# RyuOS Cyberpunk Boot Splash Animation
+
 MARKER=/var/lib/ryuos/splash-done
 [ -f "$MARKER" ] && exit 0
 
@@ -10,68 +11,46 @@ elif [ -c /dev/console ]; then
     exec >/dev/console 2>&1
 fi
 
-CYAN='\033[1;36m'
-GREEN='\033[1;32m'
-DIM='\033[2m'
-RESET='\033[0m'
+clear
 
-frame_logo() {
-    printf '\033[H\033[J'
-    printf '%b' "$CYAN"
-    cat << 'EOF'
+C_CYAN="\e[1;36m"
+C_BLUE="\e[1;34m"
+C_WHITE="\e[1;37m"
+C_GRAY="\e[1;30m"
+C_RESET="\e[0m"
 
-    ██████╗ ██╗   ██╗██╗   ██╗ ██████╗ ███████╗
-    ██╔══██╗╚██╗ ██╔╝██║   ██║██╔═══██╗██╔════╝
-    ██████╔╝ ╚████╔╝ ██║   ██║██║   ██║███████╗
-    ██╔══██╗  ╚██╔╝  ██║   ██║██║   ██║╚════██║
-    ██║  ██║   ██║   ╚██████╔╝╚██████╔╝███████║
-    ╚═╝  ╚═╝   ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝
+# Print Centered Logo
+echo -e "\n\n\n"
+echo -e "${C_CYAN}              ____             ____  _____  ${C_RESET}"
+echo -e "${C_CYAN}             / __ \__  ____  _/ __ \/ ___/  ${C_RESET}"
+echo -e "${C_BLUE}            / /_/ / / / / / / / / / \__ \   ${C_RESET}"
+echo -e "${C_BLUE}           / _, _/ /_/ / /_/ / /_/ /___/ /  ${C_RESET}"
+echo -e "${C_CYAN}          /_/ |_|\__, /\__,_/\____//____/   ${C_RESET}"
+echo -e "${C_CYAN}                /____/                      ${C_RESET}"
+echo -e "                                            "
+echo -e "${C_WHITE}                 RyuOS v0.1-cli             ${C_RESET}"
+echo -e "\n\n"
 
-EOF
-    printf '%b' "$RESET"
-}
+# Fake Animation Sequence
+frames=(
+  "${C_GRAY}[░░░░░░░░░░░░░░░░░░░░]${C_RESET}  0%  Initializing System..."
+  "${C_BLUE}[███░░░░░░░░░░░░░░░░░]${C_RESET} 15%  Mounting Rootfs..."
+  "${C_CYAN}[███████░░░░░░░░░░░░░]${C_RESET} 35%  Loading Kernel Modules..."
+  "${C_CYAN}[███████████░░░░░░░░░]${C_RESET} 55%  Starting Systemd Services..."
+  "${C_CYAN}[███████████████░░░░░]${C_RESET} 75%  Configuring Networking..."
+  "${C_CYAN}[██████████████████░░]${C_RESET} 90%  Starting Developer Environment..."
+  "${C_WHITE}[████████████████████]${C_RESET} 100% System Ready.                "
+)
 
-frame_boot() {
-    printf '\033[H\033[J'
-    printf '%b' "$GREEN"
-    echo ""
-    echo "        [=========>          ]  Loading kernel..."
-    sleep 0.35
-    printf '\033[H\033[J'
-    echo ""
-    echo "        [=================>  ]  Mounting live filesystem..."
-    sleep 0.35
-    printf '\033[H\033[J'
-    echo ""
-    echo "        [====================]  Starting services..."
-    sleep 0.35
-    printf '%b' "$RESET"
-}
+for frame in "${frames[@]}"; do
+    echo -ne "\r          $frame"
+    sleep 0.3
+done
 
-frame_welcome() {
-    printf '\033[H\033[J'
-    printf '%b' "$CYAN"
-    cat << 'EOF'
+echo -e "\n\n"
+sleep 1.0
 
-              Welcome to RyuOS
-         ─────────────────────────
-           Lightweight · CLI · Fast
-           Custom shell: ryush
-           System stats: sys-monitor
-
-         Login: live  /  Password: live
-
-EOF
-    printf '%b' "$DIM"
-    echo "         Boot complete. Starting login..."
-    printf '%b' "$RESET"
-    sleep 1.2
-}
-
+# Mark as done so it doesn't run again on next boot
 mkdir -p /var/lib/ryuos
-frame_logo
-sleep 0.5
-frame_boot
-frame_welcome
 touch "$MARKER"
-printf '\033[H\033[J'
+clear
