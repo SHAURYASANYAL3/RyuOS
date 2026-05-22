@@ -1,0 +1,33 @@
+# Build artifacts
+*.iso
+*.img
+*.log
+build-artifacts/
+ISO_OUTPUT/
+
+# Live-build
+config/live-build/binary/
+config/live-build/cache/
+config/live-build/chroot/
+
+# Kernel
+config/kernel/linux-*/
+config/kernel/*.tar.xz
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+venv/
