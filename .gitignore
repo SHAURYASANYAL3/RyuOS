@@ -4,6 +4,8 @@
 *.log
 build-artifacts/
 ISO_OUTPUT/
+ISO/
+build.log
 
 # Live-build
 config/live-build/binary/

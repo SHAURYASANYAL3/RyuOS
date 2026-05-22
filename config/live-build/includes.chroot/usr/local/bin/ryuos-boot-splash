@@ -1,0 +1,77 @@
+#!/bin/bash
+# RyuOS ASCII boot animation — runs once on first boot
+MARKER=/var/lib/ryuos/splash-done
+[ -f "$MARKER" ] && exit 0
+
+# Show on primary console
+if [ -c /dev/tty1 ]; then
+    exec >/dev/tty1 2>&1
+elif [ -c /dev/console ]; then
+    exec >/dev/console 2>&1
+fi
+
+CYAN='\033[1;36m'
+GREEN='\033[1;32m'
+DIM='\033[2m'
+RESET='\033[0m'
+
+frame_logo() {
+    printf '\033[H\033[J'
+    printf '%b' "$CYAN"
+    cat << 'EOF'
+
+    ██████╗ ██╗   ██╗██╗   ██╗ ██████╗ ███████╗
+    ██╔══██╗╚██╗ ██╔╝██║   ██║██╔═══██╗██╔════╝
+    ██████╔╝ ╚████╔╝ ██║   ██║██║   ██║███████╗
+    ██╔══██╗  ╚██╔╝  ██║   ██║██║   ██║╚════██║
+    ██║  ██║   ██║   ╚██████╔╝╚██████╔╝███████║
+    ╚═╝  ╚═╝   ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝
+
+EOF
+    printf '%b' "$RESET"
+}
+
+frame_boot() {
+    printf '\033[H\033[J'
+    printf '%b' "$GREEN"
+    echo ""
+    echo "        [=========>          ]  Loading kernel..."
+    sleep 0.35
+    printf '\033[H\033[J'
+    echo ""
+    echo "        [=================>  ]  Mounting live filesystem..."
+    sleep 0.35
+    printf '\033[H\033[J'
+    echo ""
+    echo "        [====================]  Starting services..."
+    sleep 0.35
+    printf '%b' "$RESET"
+}
+
+frame_welcome() {
+    printf '\033[H\033[J'
+    printf '%b' "$CYAN"
+    cat << 'EOF'
+
+              Welcome to RyuOS
+         ─────────────────────────
+           Lightweight · CLI · Fast
+           Custom shell: ryush
+           System stats: sys-monitor
+
+         Login: live  /  Password: live
+
+EOF
+    printf '%b' "$DIM"
+    echo "         Boot complete. Starting login..."
+    printf '%b' "$RESET"
+    sleep 1.2
+}
+
+mkdir -p /var/lib/ryuos
+frame_logo
+sleep 0.5
+frame_boot
+frame_welcome
+touch "$MARKER"
+printf '\033[H\033[J'

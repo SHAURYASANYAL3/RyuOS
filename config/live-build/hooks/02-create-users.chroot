@@ -1,0 +1,83 @@
+#!/bin/sh
+# Create login accounts — use bash for login (ryush is not a valid login shell yet)
+set -e
+
+echo "[*] Setting up RyuOS login accounts..."
+
+groupadd -f sudo 2>/dev/null || true
+groupadd -f plugdev 2>/dev/null || true
+groupadd -f audio 2>/dev/null || true
+
+# ryush must be in /etc/shells but NOT used as login shell (causes "Permission denied")
+if [ -f /usr/local/bin/ryush ]; then
+    chmod 755 /usr/local/bin/ryush /usr/local/bin/sys-monitor 2>/dev/null || true
+    grep -q '/usr/local/bin/ryush' /etc/shells 2>/dev/null || echo '/usr/local/bin/ryush' >> /etc/shells
+fi
+
+LOGIN_SHELL="/bin/bash"
+
+# live user
+if ! id live >/dev/null 2>&1; then
+    useradd -m -s "$LOGIN_SHELL" -G sudo,audio,plugdev live
+    echo "[+] Created user: live"
+else
+    usermod -s "$LOGIN_SHELL" -G sudo,audio,plugdev live 2>/dev/null || true
+fi
+mkdir -p /home/live
+chown -R live:live /home/live
+chmod 755 /home/live
+echo "live:live" | chpasswd
+passwd -u live 2>/dev/null || true
+
+# root — bash login shell (not ryush)
+usermod -s "$LOGIN_SHELL" root 2>/dev/null || \
+    sed -i 's|^\(root:[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:\)[^:]*|\1/bin/bash|' /etc/passwd
+echo "root:root" | chpasswd
+passwd -u root 2>/dev/null || true
+
+# Allow root login on virtual terminals
+mkdir -p /etc
+if [ ! -f /etc/securetty ] || [ ! -s /etc/securetty ]; then
+    cat > /etc/securetty << 'EOF'
+console
+tty1
+tty2
+tty3
+tty4
+tty5
+tty6
+vc/1
+vc/2
+EOF
+fi
+
+# Launch ryush after login (optional — type ryush manually anytime)
+cat > /home/live/.bashrc << 'EOF'
+# RyuOS — default bash login; run custom shell with: ryush
+[ -x /usr/local/bin/ryush ] && [ -t 1 ] && command -v ryush >/dev/null && \
+    echo "Tip: type 'ryush' for the RyuOS custom shell, or 'sys-monitor' for stats."
+EOF
+chown live:live /home/live/.bashrc
+
+cat > /root/.bashrc << 'EOF'
+[ -x /usr/local/bin/ryush ] && [ -t 1 ] && \
+    echo "RyuOS root — type 'ryush' for custom shell."
+EOF
+
+cat > /etc/issue << 'EOF'
+
+  RyuOS login
+  ───────────
+    live / live
+    root / root
+
+  Then type: ryush
+
+EOF
+
+# Fix shadow/passwd permissions
+chmod 644 /etc/passwd /etc/group
+chmod 640 /etc/shadow /etc/gshadow 2>/dev/null || true
+chown root:shadow /etc/shadow /etc/gshadow 2>/dev/null || true
+
+echo "[*] User setup complete (login shell: bash)."

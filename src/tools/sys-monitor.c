@@ -49,11 +49,15 @@ void print_mem_info() {
     unsigned long total_ram = si.totalram * si.mem_unit;
     unsigned long free_ram = si.freeram * si.mem_unit;
     unsigned long used_ram = total_ram - free_ram;
+    double used_pct = 0.0;
+
+    if (total_ram > 0) {
+        used_pct = ((double)used_ram / total_ram) * 100.0;
+    }
 
     printf("  Memory:\n");
     printf("    Total:      %lu MB\n", total_ram / (1024 * 1024));
-    printf("    Used:       %lu MB (%.1f%%)\n", used_ram / (1024 * 1024), 
-           ((double)used_ram / total_ram) * 100.0);
+    printf("    Used:       %lu MB (%.1f%%)\n", used_ram / (1024 * 1024), used_pct);
     printf("    Free:       %lu MB\n", free_ram / (1024 * 1024));
 }
 

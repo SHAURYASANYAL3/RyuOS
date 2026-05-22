@@ -1,0 +1,18 @@
+[Unit]
+Description=RyuOS ASCII boot splash
+DefaultDependencies=no
+After=local-fs.target ryuos-fix-login.service
+Before=getty@tty1.service getty.target
+ConditionPathExists=!/var/lib/ryuos/splash-done
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/ryuos-boot-splash
+StandardInput=tty
+StandardOutput=tty
+StandardError=tty
+TTYPath=/dev/tty1
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

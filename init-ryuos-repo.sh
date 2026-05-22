@@ -1302,4 +1302,4 @@ echo "  3. Run: git init && git add . && git commit -m 'Initial commit'"
 echo "  4. Add remote: git remote add origin https://github.com/YOUR_USERNAME/ryuos.git"
 echo "  5. Push: git push -u origin main"
 EOF
-chmod +x /home/claude/init-ryuos-repo.sh
+chmod +x init-ryuos-repo.sh

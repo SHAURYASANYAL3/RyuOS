@@ -1,137 +1,91 @@
-# RyuOS: Custom Linux Distribution
+# RyuOS: Ultra-Lightweight Custom Linux Distribution
 
-[![Build ISO](https://github.com/YOUR_USERNAME/ryuos/workflows/Build%20ISO/badge.svg)](https://github.com/YOUR_USERNAME/ryuos/actions)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![GitHub Stars](https://img.shields.io/github/stars/YOUR_USERNAME/ryuos)](https://github.com/YOUR_USERNAME/ryuos/stargazers)
+[![GitHub Stars](https://img.shields.io/github/stars/SHAURYASANYAL3/RyuOS)](https://github.com/SHAURYASANYAL3/RyuOS/stargazers)
 
-A lightweight, developer-focused Linux distribution built from scratch.
+A custom, extremely lightweight, developer-focused Linux distribution built entirely from scratch. Optimized to run on practically any PC or laptop, with a base CLI version capable of booting seamlessly with highly constrained hardware (128MB RAM targets).
 
 ## Features
 
-- 🚀 **Fast Boot**: ~12 seconds to login
-- 📦 **Minimal**: 387MB ISO, 250 packages
-- 🔧 **Custom Kernel**: Optimized for performance
-- 🐚 **Developer Tools**: Pre-configured with build-essential, git, python3
-- 🎨 **Custom Branding**: Distinctive GRUB theme and boot sequence
-- 🤖 **AI Assistant**: Terminal helper (coming v1.0)
+- 🚀 **Lightning Fast Boot**: Boots directly into a custom shell in seconds.
+- 📦 **Ultra Minimal Footprint**: ~300MB ISO, highly stripped initramfs environment.
+- 🐚 **Custom RyuShell**: A bespoke C-based terminal shell (`ryush`) set as the default login.
+- 📊 **Custom System Tools**: Includes a native C-based `sys-monitor` for hardware telemetry.
+- 🧠 **Smart Initramfs Tuning**: Uses `MODULES=most` with temporary heavy driver stripping and `gzip` compression to achieve successful boots in <1GB RAM scenarios while preserving `live-boot` integration.
+- 🎨 **Custom Branding**: Distinctive boot sequence and custom Message of the Day (MOTD) ASCII art.
+- 🛠️ **Developer Ready**: Comes pre-configured with `python3`, `git`, `gcc`, `make`, `htop`, `nano`, and essential networking utilities (`curl`, `wget`, `iproute2`).
 
 ## Quick Start
 
-### Download Latest Release
-```bash
-wget https://github.com/YOUR_USERNAME/ryuos/releases/download/v0.2/ryuos-0.2.iso
-```
+### 1. Download the Latest ISO
+Download the `ryuos-cli.iso` from the `ISO/` directory or the latest release page (once published).
 
-### Boot in QEMU
+### 2. Boot in QEMU (Recommended for Testing)
+Run the provided script to test it locally. (Requires QEMU installed):
 ```bash
-qemu-system-x86_64 -cdrom ryuos-0.2.iso -m 2048 -enable-kvm -boot d
+# Boot with 1GB RAM in graphical mode (or VNC)
+./scripts/qemu-test.sh ISO/ryuos-cli.iso 1024
 ```
+_Note: If you run into memory lockups during initramfs decompression, allocate at least 1024MB RAM._
 
-### Boot in VirtualBox
-1. New VM → Linux, Debian (64-bit)
-2. Attach ISO as CD-ROM
-3. Boot
+### 3. Login
+- **Username:** `user`
+- **Password:** `live`
 
 ## Architecture
 
-RyuOS is built in layers:
+RyuOS is built in layers using Debian `live-build`:
 
 ```
 GRUB2 (Bootloader)
     ↓
-Linux 6.x Kernel (Custom)
+Linux 6.1 Kernel (Debian Bookworm base)
     ↓
-systemd (Init System)
+systemd (Init System - heavily stripped)
     ↓
-Bash + Custom Tools
+RyuShell (`ryush` - Default User Shell)
     ↓
-User Environment
+User Environment (Custom C tools, Python3, Git)
 ```
-
-For detailed architecture, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ## Building from Source
 
 ### Prerequisites
-- WSL2 Debian, or native Debian/Ubuntu
-- 4GB RAM, 4 CPU cores recommended
-- 20GB free disk space
+- Debian or Ubuntu host (or WSL2 running Debian/Ubuntu)
+- At least 4GB RAM to execute the build
+- ~10GB free disk space
+- `live-build`, `debootstrap`, `squashfs-tools`, `syslinux-utils`, `qemu-system-x86`
 
 ### Build Steps
 ```bash
-git clone https://github.com/YOUR_USERNAME/ryuos.git
-cd ryuos
+git clone https://github.com/SHAURYASANYAL3/RyuOS.git
+cd RyuOS
 ./scripts/build-iso.sh
 ```
 
-ISO will be output to `ISO_OUTPUT/ryuos-*.iso`
+The compiled ISO will be placed in the `ISO/` directory as `ryuos-cli.iso`.
 
-For detailed build instructions: [docs/BUILD.md](docs/BUILD.md)
-
-## Development Status
-
-| Phase | Status | Target |
-|-------|--------|--------|
-| Foundation | ✅ Complete | Week 3 |
-| Custom Kernel | 🔄 In Progress | Week 5 |
-| Tools & Features | ⏳ Planned | Week 10 |
-| GUI & Polish | ⏳ Planned | Week 14 |
-| Release | ⏳ Planned | v1.0 |
-
-## Documentation
-
-- [Architecture](docs/ARCHITECTURE.md) - System design and layers
-- [Build Guide](docs/BUILD.md) - How to build RyuOS
-- [Kernel Customization](docs/KERNEL.md) - Kernel optimization details
-- [Roadmap](docs/ROADMAP.md) - Future plans and milestones
-- [Contributing](CONTRIBUTING.md) - How to contribute
-
-## Performance
-
-| Metric | RyuOS | Debian | Reduction |
-|--------|-------|--------|-----------|
-| Boot time | 12s | 30s | -60% |
-| ISO size | 387MB | 3GB | -87% |
-| Packages | 250 | 2000+ | -88% |
-| Memory | 150MB | 512MB | -71% |
+### Custom Development
+If you modify the custom C tools in `src/`, they will be automatically recompiled and injected into the live filesystem during the build process thanks to `scripts/build-tools.sh`.
 
 ## Directory Structure
 
 ```
-ryuos/
-├── docs/              # Documentation
-├── scripts/           # Build and test scripts
-├── config/            # Live-build and kernel config
-│   ├── live-build/    # ISO creation config
-│   └── kernel/        # Kernel source and patches
-├── src/               # Custom tools and shells
-├── tests/             # Test scripts
-└── ISO_OUTPUT/        # Built ISOs
+RyuOS/
+├── config/            # Debian live-build configurations & hooks
+│   └── live-build/    # Package lists, custom initramfs hooks
+├── ISO/               # Directory for built ISO artifacts
+├── scripts/           # Build scripts (`build-iso.sh`, `qemu-test.sh`)
+├── src/               # Custom C applications (RyuShell, sys-monitor)
+├── README.md          # This file
+└── Makefile           # Project makefile
 ```
 
-## Contributing
+## Author
 
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+**SHAURYASANYAL3**
+Built with passion for systems programming, operating system design, and lightweight computing.
 
 ## License
 
 MIT License - see [LICENSE](LICENSE)
-
-## Author
-
-[Your Name] - [@your_twitter](https://twitter.com/your_twitter)
-
-Built with passion for systems programming and Linux.
-
-## Resources
-
-- [Linux Kernel Documentation](https://www.kernel.org/doc/)
-- [Debian Live Manual](https://live-team.pages.debian.net/live-manual/)
-- [systemd Documentation](https://systemd.io/)
-- [GRUB2 Manual](https://www.gnu.org/software/grub/manual/)
-
----
-
-**Questions?** Open an [Issue](https://github.com/YOUR_USERNAME/ryuos/issues)
-
-**Want to follow development?** ⭐ Star the repo

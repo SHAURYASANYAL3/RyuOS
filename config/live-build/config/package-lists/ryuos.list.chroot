@@ -1,16 +1,43 @@
+# Core live system
+live-boot
+live-config-systemd
+live-config
+live-tools
+openssl
 systemd
 systemd-sysv
 udev
 dbus
-htop
-vim-tiny
-nano
+
+# Essential CLI
+bash
+coreutils
+util-linux
+mount
+procps
+kmod
+sudo
+login
+passwd
+ca-certificates
+less
+grep
+sed
+
+# Network
 iproute2
+iputils-ping
+isc-dhcp-client
 curl
 wget
 openssh-client
-iputils-ping
-isc-dhcp-client
+
+# Editors & monitoring
+vim-tiny
+nano
+htop
+
+# Development
 build-essential
 python3-minimal
 git

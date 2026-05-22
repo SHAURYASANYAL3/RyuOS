@@ -1,0 +1,16 @@
+#!/bin/bash
+# live-config often sets an empty password for "live" — restore known credentials
+set -e
+MARKER=/var/lib/ryuos/login-fixed
+
+if id live >/dev/null 2>&1; then
+    usermod -s /bin/bash -G sudo,audio,plugdev live 2>/dev/null || true
+    echo "live:live" | chpasswd
+    passwd -u live 2>/dev/null || true
+fi
+
+echo "root:root" | chpasswd
+passwd -u root 2>/dev/null || true
+
+mkdir -p /var/lib/ryuos
+touch "$MARKER"
