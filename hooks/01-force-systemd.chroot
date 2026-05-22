@@ -1,0 +1,6 @@
+#!/bin/sh
+set -e
+echo "[*] Forcing systemd and removing sysvinit-core..."
+apt-get install -y --no-install-recommends systemd-sysv live-config-systemd
+apt-get purge -y sysvinit-core live-config-sysvinit || true
+apt-get autoremove -y

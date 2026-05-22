@@ -97,6 +97,11 @@ if [ -d "$HOST_DIR/build-artifacts" ]; then
     chmod +x config/includes.chroot/usr/local/bin/* 2>/dev/null || true
 fi
 
+# Copy custom filesystem includes
+if [ -d "$HOST_DIR/config/live-build/includes.chroot" ]; then
+    cp -a "$HOST_DIR/config/live-build/includes.chroot/"* config/includes.chroot/ 2>/dev/null || true
+fi
+
 log_info "Running live-build configuration..."
 run_root lb clean --all
 run_root lb config
