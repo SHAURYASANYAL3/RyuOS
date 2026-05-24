@@ -42,6 +42,5 @@ systemctl mask ModemManager.service 2>/dev/null || true
 
 # Enable fast background networking
 systemctl enable systemd-networkd.service 2>/dev/null || true
-systemctl enable systemd-resolved.service 2>/dev/null || true
 
 echo "[+] GUI setup complete."

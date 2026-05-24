@@ -55,7 +55,6 @@ zram-tools
 # Network
 iproute2
 iputils-ping
-systemd-resolved
 curl
 wget
 openssh-client
