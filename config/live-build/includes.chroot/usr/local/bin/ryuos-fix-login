@@ -1,6 +1,7 @@
 #!/bin/bash
-# live-config often sets an empty password for "live" — restore known credentials
-set -e
+# Manual recovery helper for restoring known live-session credentials.
+set -euo pipefail
+
 MARKER=/var/lib/ryuos/login-fixed
 
 if id live >/dev/null 2>&1; then

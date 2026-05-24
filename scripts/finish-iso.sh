@@ -19,16 +19,18 @@ ISO=""
 for candidate in \
     "$BUILD_DIR/live-image-amd64.hybrid.iso" \
     "$BUILD_DIR/live-image-amd64.iso" \
+    "$BUILD_DIR/binary.hybrid.iso" \
+    "$BUILD_DIR/binary.iso" \
     "$BUILD_DIR/chroot/binary.hybrid.iso" \
     "$BUILD_DIR/binary/live-image-amd64.hybrid.iso"; do
-    if [ -f "$candidate" ]; then
+    if [ -s "$candidate" ]; then
         ISO="$candidate"
         break
     fi
 done
 
 if [ -z "$ISO" ]; then
-    ISO=$(find "$BUILD_DIR" -maxdepth 4 -name '*.iso' -type f 2>/dev/null | head -1)
+    ISO=$(find "$BUILD_DIR" -maxdepth 4 -name '*.iso' -type f -size +0c 2>/dev/null | head -1)
 fi
 
 if [ -z "$ISO" ]; then

@@ -1,9 +1,8 @@
 [Unit]
-Description=RyuOS restore login passwords after live-config
+Description=RyuOS restore live user login passwords
 DefaultDependencies=no
-After=live-config.service systemd-user-sessions.service
+After=systemd-user-sessions.service
 Before=getty@tty1.service getty.target
-# Run every boot (live-config may reset passwords)
 
 [Service]
 Type=oneshot

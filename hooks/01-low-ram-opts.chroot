@@ -64,8 +64,8 @@ fi
 # 3. Disable Unnecessary systemd Services to save memory
 echo "[+] Disabling non-essential services to save memory..."
 for service in systemd-timesyncd.service apt-daily.timer apt-daily-upgrade.timer e2scrub_all.timer fstrim.timer; do
-    if systemctl is-enabled $service >/dev/null 2>&1; then
-        systemctl disable $service || true
+    if systemctl is-enabled "$service" >/dev/null 2>&1; then
+        systemctl disable "$service" || true
     fi
 done
 

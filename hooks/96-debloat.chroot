@@ -3,15 +3,27 @@ set -e
 
 echo "[*] Purging bloated desktop daemons for extreme low-memory target..."
 
-# Purge auto-mounters, accessibility daemons, and policykit
-apt-get purge --auto-remove -y gvfs gvfs-daemons gvfs-libs gvfs-common udisks2 at-spi2-core libatspi0 lxpolkit policykit-1 polkitd 2>/dev/null || true
+# Purge auto-mounters, accessibility daemons, desktop portals, and policykit.
+# These are common recommends pulled by GTK/file-manager/browser packages and
+# are unnecessary for the Openbox + terminal-first RyuOS session.
+apt-get purge --auto-remove -y \
+    gvfs gvfs-daemons gvfs-libs gvfs-common gvfs-backends gvfs-fuse \
+    udisks2 \
+    at-spi2-core libatspi0 \
+    lxpolkit policykit-1 polkitd packagekit \
+    upower gnome-keyring \
+    xdg-desktop-portal xdg-desktop-portal-gtk \
+    cron logrotate tasksel tasksel-data \
+    2>/dev/null || true
 
 # Limit systemd-journald memory usage
 mkdir -p /etc/systemd/journald.conf.d
 cat > /etc/systemd/journald.conf.d/ryuos-limits.conf << 'EOF'
 [Journal]
+Storage=volatile
 SystemMaxUse=10M
 RuntimeMaxUse=10M
+Compress=no
 EOF
 
 # Mask journal flush to speed up boot

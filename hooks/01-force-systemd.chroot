@@ -1,6 +1,6 @@
 #!/bin/sh
 set -e
-echo "[*] Forcing systemd and removing sysvinit-core..."
-apt-get install -y --no-install-recommends systemd-sysv live-config-systemd
-apt-get purge -y sysvinit-core live-config-sysvinit || true
+echo "[*] Forcing systemd boot and removing SysV/live-config backends..."
+apt-get install -y --no-install-recommends systemd-sysv
+apt-get purge -y sysvinit-core live-config live-config-systemd live-config-sysvinit || true
 apt-get autoremove -y

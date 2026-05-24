@@ -45,7 +45,7 @@ test:
 
 lint:
 	@printf "$(YELLOW)[*] Linting scripts...$(RESET)\n"
-	@shellcheck -e SC1091 scripts/*.sh tests/*.sh 2>/dev/null || (echo "shellcheck failed or not installed. Run 'sudo apt install shellcheck'" && exit 1)
+	@shellcheck -e SC1091 scripts/*.sh tests/*.sh hooks/*.chroot 2>/dev/null || (echo "shellcheck failed or not installed. Run 'sudo apt install shellcheck'" && exit 1)
 	@printf "$(GREEN)[+] Linting passed!$(RESET)\n"
 
 clean:

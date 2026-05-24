@@ -8,7 +8,7 @@ run_root() {
     fi
 }
 
-# Copy ISO to ~/ryuos-cli.iso (always writable) and optionally to project ISO/ on /mnt/*
+# Copy ISO to ~/ryuos-cli.iso (always writable) and the project iso/ folder.
 copy_iso_to_project() {
     local src="$1"
     local host_dir="$2"
@@ -25,17 +25,17 @@ copy_iso_to_project() {
     run_root cp "$src" "$home_iso"
     run_root chown "$user:$user" "$home_iso" 2>/dev/null || chmod 644 "$home_iso" 2>/dev/null || true
 
-    if [[ "$host_dir" == /mnt/* ]] || [[ "$host_dir" == /mnt/* ]]; then
-        mkdir -p "$host_dir/ISO" 2>/dev/null || run_root mkdir -p "$host_dir/ISO"
-        run_root rm -f "$host_dir/ISO/ryuos-cli.iso" 2>/dev/null || true
+    if [[ "$host_dir" == /mnt/* ]]; then
+        mkdir -p "$host_dir/iso" 2>/dev/null || run_root mkdir -p "$host_dir/iso"
+        run_root rm -f "$host_dir/iso/ryuos-cli.iso" 2>/dev/null || true
         echo "[*] Copying ISO to Windows project folder..."
-        run_root cp "$home_iso" "$host_dir/ISO/ryuos-cli.iso"
-        run_root chmod 666 "$host_dir/ISO/ryuos-cli.iso" 2>/dev/null || true
-        echo "[+] Windows copy: $host_dir/ISO/ryuos-cli.iso"
+        run_root cp "$home_iso" "$host_dir/iso/ryuos-cli.iso"
+        run_root chmod 666 "$host_dir/iso/ryuos-cli.iso" 2>/dev/null || true
+        echo "[+] Windows copy: $host_dir/iso/ryuos-cli.iso"
     else
-        mkdir -p "$host_dir/ISO"
-        cp "$home_iso" "$host_dir/ISO/ryuos-cli.iso"
-        echo "[+] Project copy: $host_dir/ISO/ryuos-cli.iso"
+        mkdir -p "$host_dir/iso"
+        cp "$home_iso" "$host_dir/iso/ryuos-cli.iso"
+        echo "[+] Project copy: $host_dir/iso/ryuos-cli.iso"
     fi
 
     echo "[+] Primary ISO (use for QEMU): $home_iso"

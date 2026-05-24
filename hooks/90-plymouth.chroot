@@ -3,6 +3,13 @@ set -e
 
 echo "[*] Installing RyuOS native Plymouth theme..."
 
+# Plymouth is intentionally optional in the fast-boot profile. If the
+# package list excludes it, keep the build moving without a boot splash.
+if ! dpkg-query -W -f='${Status}' plymouth 2>/dev/null | grep -q "install ok installed"; then
+    echo "[*] Plymouth not installed; skipping boot splash setup."
+    exit 0
+fi
+
 # Set the theme and definitively rebuild the initramfs
 # The -R flag forces update-initramfs -u inside the chroot
 if command -v plymouth-set-default-theme >/dev/null 2>&1; then

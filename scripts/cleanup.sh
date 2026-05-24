@@ -17,6 +17,7 @@ if [ -d "$PROJECT_DIR/config/live-build" ] && command -v lb >/dev/null 2>&1; the
 fi
 
 run_root rm -rf "$WSL_BUILD_DIR" 2>/dev/null || true
+run_root rm -f "$PROJECT_DIR/iso/ryuos-cli.iso" 2>/dev/null || true
 run_root rm -f "$PROJECT_DIR/ISO/ryuos-cli.iso" 2>/dev/null || true
 run_root rm -f "$HOME/ryuos-cli.iso" 2>/dev/null || true
 rm -f "$PROJECT_DIR/build.log" 2>/dev/null || true

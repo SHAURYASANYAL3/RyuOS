@@ -1,22 +1,10 @@
 #!/bin/sh
-# Runs last — lock in users/passwords after all other hooks and live-config packages
+# Runs last - lock in users/passwords after all other hooks.
 set -e
 
-echo "[*] Finalizing RyuOS (users, live-config, boot splash)..."
+echo "[*] Finalizing RyuOS (users and boot defaults)..."
 
 LOGIN_SHELL="/bin/bash"
-
-# --- Live-config: force username at boot (not random) ---
-mkdir -p /etc/live/config.conf.d
-cat > /etc/live/config.conf.d/ryuos.conf << 'EOF'
-# RyuOS live system identity
-LIVE_USERNAME="live"
-LIVE_USER_FULLNAME="RyuOS User"
-LIVE_HOSTNAME="ryuos"
-EOF
-cat > /etc/live/config.conf.d/ryuos-disable.conf << 'EOF'
-LIVE_DISABLE="user-defaults"
-EOF
 
 # --- Users (re-apply in case anything earlier overwrote shadow) ---
 groupadd -f sudo 2>/dev/null || true
@@ -33,7 +21,7 @@ chmod 755 /home/live
 usermod -s "$LOGIN_SHELL" root 2>/dev/null || true
 usermod -s "$LOGIN_SHELL" -G sudo,audio,plugdev live 2>/dev/null || true
 
-# Set passwords with chpasswd AND openssl backup (live / root)
+# Set passwords with chpasswd and an openssl hash fallback when available.
 echo "live:live" | chpasswd
 echo "root:root" | chpasswd
 passwd -u live 2>/dev/null || true
@@ -46,7 +34,7 @@ if command -v openssl >/dev/null 2>&1; then
     usermod -p "$ROOT_HASH" root 2>/dev/null || true
 fi
 
-# PAM: allow login on tty
+# PAM: allow login on tty.
 mkdir -p /etc
 cat > /etc/securetty << 'EOF'
 console
@@ -64,17 +52,11 @@ chmod 644 /etc/passwd /etc/group
 chmod 640 /etc/shadow /etc/gshadow 2>/dev/null || true
 chown root:shadow /etc/shadow /etc/gshadow 2>/dev/null || true
 
-# --- Enable boot splash + login fix (symlinks; no systemctl in chroot) ---
-mkdir -p /etc/systemd/system/multi-user.target.wants
-for unit in ryuos-fix-login.service; do
-    if [ -f "/etc/systemd/system/$unit" ]; then
-        ln -sf "/etc/systemd/system/$unit" \
-            "/etc/systemd/system/multi-user.target.wants/$unit"
-    fi
-done
+# The live user is prebuilt, so no live-config password repair unit is enabled
+# on the boot path. Keep the helper script available for manual recovery.
 chmod 755 /usr/local/bin/ryuos-fix-login 2>/dev/null || true
 
-# Login banner (shown before password prompt)
+# Login banner (shown before password prompt).
 cat > /etc/issue << 'ISSUE'
 [1;36m
   ____        _   ___  ____
@@ -83,12 +65,10 @@ cat > /etc/issue << 'ISSUE'
  |  _ <| |_| | | (_) |__) |
  |_| \\_\\__,_|_|\\___/____/
 [0m
-       RyuOS v0.1-cli — Debian 12 base
+       RyuOS v0.1-cli - Debian 12 base
 
   Login:  live   Password: live
           root   Password: root
-
-  (If live fails, try password: just press Enter)
 
 ISSUE
 

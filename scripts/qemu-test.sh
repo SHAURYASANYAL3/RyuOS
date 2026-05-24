@@ -1,15 +1,18 @@
 #!/bin/bash
 # Boot RyuOS ISO in QEMU (WSLg GUI, terminal, or VNC)
-set -e
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-# Prefer ~/ryuos-cli.iso (ext4) — copies on /mnt/d/ may be root-owned or read-only
-if [ -f "${HOME}/ryuos-cli.iso" ]; then
+
+if [ -s "${HOME}/ryuos-cli.iso" ]; then
     ISO_PATH="${HOME}/ryuos-cli.iso"
+elif [ -s "${PROJECT_DIR}/iso/ryuos-cli.iso" ]; then
+    ISO_PATH="${PROJECT_DIR}/iso/ryuos-cli.iso"
 else
     ISO_PATH="${PROJECT_DIR}/ISO/ryuos-cli.iso"
 fi
+
 MEM_SIZE="1024"
 DISPLAY_MODE="auto"   # auto | gui | text | vnc
 KERNEL_APPEND=""
@@ -17,31 +20,31 @@ KERNEL_APPEND=""
 usage() {
     echo "Usage: $0 [ISO_PATH] [RAM_MB] [--gui|--text|--vnc|--rescue]"
     echo ""
-    echo "  --gui    Force graphical window (needs WSLg / X server)"
-    echo "  --text   Boot inside this terminal (no window needed)"
-    echo "  --vnc    Listen on 127.0.0.1:5900 — connect with a VNC viewer on Windows"
-    echo "  --rescue Skip login — drops straight to root shell (broken ISO workaround)"
+    echo "  --gui     Force graphical window (needs WSLg / X server)"
+    echo "  --text    Boot inside this terminal (no window needed)"
+    echo "  --vnc     Listen on 127.0.0.1:5900; connect with a VNC viewer"
+    echo "  --rescue  Skip login and drop to a root shell"
     echo ""
     echo "Examples:"
     echo "  $0"
-    echo "  $0 ISO/ryuos-cli.iso 2048"
-    echo "  $0 ISO/ryuos-cli.iso 2048 --text"
+    echo "  $0 iso/ryuos-cli.iso 1024 --vnc"
+    echo "  $0 iso/ryuos-cli.iso 512 --text"
 }
 
 while [ $# -gt 0 ]; do
     case "$1" in
-        --gui)  DISPLAY_MODE="gui" ;;
+        --gui) DISPLAY_MODE="gui" ;;
         --text) DISPLAY_MODE="text" ;;
-        --vnc)    DISPLAY_MODE="vnc" ;;
+        --vnc) DISPLAY_MODE="vnc" ;;
         --rescue) KERNEL_APPEND="boot=live init=/bin/bash rw" ;;
         -h|--help) usage; exit 0 ;;
         *)
-            if [ -f "$1" ]; then
+            if [ -s "$1" ]; then
                 ISO_PATH="$1"
             elif [[ "$1" =~ ^[0-9]+$ ]]; then
                 MEM_SIZE="$1"
             else
-                echo "[-] Unknown argument: $1"
+                echo "[-] Unknown argument or empty ISO: $1"
                 usage
                 exit 1
             fi
@@ -50,9 +53,9 @@ while [ $# -gt 0 ]; do
     shift
 done
 
-if [ ! -f "$ISO_PATH" ]; then
-    echo "[-] ISO not found: $ISO_PATH"
-    echo "[-] Build first: ./scripts/build-iso.sh  (or: ./scripts/finish-iso.sh)"
+if [ ! -s "$ISO_PATH" ]; then
+    echo "[-] ISO not found or empty: $ISO_PATH"
+    echo "[-] Build first: ./scripts/build-iso.sh"
     exit 1
 fi
 
@@ -61,14 +64,13 @@ if ! command -v qemu-system-x86_64 >/dev/null 2>&1; then
     exit 1
 fi
 
-# WSLg: Ubuntu often starts without DISPLAY set even when GUI is available
 setup_wslg_display() {
     if [ -n "${DISPLAY:-}" ] || [ -n "${WAYLAND_DISPLAY:-}" ]; then
         return 0
     fi
     if [ -S /tmp/.X11-unix/X0 ]; then
         export DISPLAY=:0
-        echo "[+] WSLg detected — set DISPLAY=:0"
+        echo "[+] WSLg detected; set DISPLAY=:0"
     fi
     if [ -S /mnt/wslg/runtime-dir/wayland-0 ]; then
         export WAYLAND_DISPLAY=wayland-0
@@ -81,7 +83,7 @@ if [ -c /dev/kvm ] && [ -r /dev/kvm ] && [ -w /dev/kvm ]; then
     echo "[+] KVM acceleration enabled."
     KVM_OPTS=("-enable-kvm" "-cpu" "host")
 else
-    echo "[-] KVM not available — software emulation (slower, first boot may take 2–5 min)."
+    echo "[-] KVM not available; software emulation will be slower."
     KVM_OPTS=("-cpu" "max")
 fi
 
@@ -90,39 +92,37 @@ case "$DISPLAY_MODE" in
     gui)
         setup_wslg_display
         if [ -z "${DISPLAY:-}" ] && [ -z "${WAYLAND_DISPLAY:-}" ]; then
-            echo "[-] No graphical display. Use --text or --vnc, or run from Windows Terminal with WSLg."
+            echo "[-] No graphical display. Use --text or --vnc."
             exit 1
         fi
         DISPLAY_OPTS=("-vga" "std")
-        echo "[*] Graphical mode — QEMU window should appear on your Windows desktop."
+        echo "[*] Graphical mode selected."
         ;;
     text)
         DISPLAY_OPTS=("-display" "curses" "-vga" "std")
-        echo "[*] Terminal mode — boot output appears here."
-        echo "[*] Exit QEMU: Ctrl+A, then X"
+        echo "[*] Terminal mode selected. Exit QEMU with Ctrl+A, then X."
         ;;
     vnc)
         DISPLAY_OPTS=("-vga" "std" "-display" "vnc=127.0.0.1:0")
-        echo "[*] VNC mode — on Windows, open a VNC viewer to: 127.0.0.1:5900"
-        echo "[*] (TigerVNC / RealVNC / built-in Remote Desktop won't work — use a VNC client)"
+        echo "[*] VNC mode selected. Connect to 127.0.0.1:5900."
         ;;
     auto)
         setup_wslg_display
         if [ -n "${DISPLAY:-}" ] || [ -n "${WAYLAND_DISPLAY:-}" ]; then
             DISPLAY_OPTS=("-vga" "std")
-            echo "[+] Graphical mode (WSLg) — check your Windows taskbar for a QEMU window."
+            echo "[+] Graphical mode selected automatically."
         else
             DISPLAY_OPTS=("-display" "curses" "-vga" "std")
-            echo "[*] No GUI display found — using terminal mode."
-            echo "[*] Exit QEMU: Ctrl+A, then X  |  For a window: $0 --gui"
+            echo "[*] No GUI display found; using terminal mode."
+            echo "[*] Exit QEMU with Ctrl+A, then X."
         fi
         ;;
 esac
 
 echo "[*] Booting: $ISO_PATH"
-echo "[*] RAM: ${MEM_SIZE}MB — Stop: close QEMU window, or Ctrl+C here"
+echo "[*] RAM: ${MEM_SIZE}MB"
 if [ -n "$KERNEL_APPEND" ]; then
-    echo "[*] Rescue mode: no login required (root shell via init=/bin/bash)"
+    echo "[*] Rescue mode enabled."
 fi
 
 QEMU_ARGS=(

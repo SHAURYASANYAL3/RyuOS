@@ -15,9 +15,9 @@ done
 echo "[*] Installing build dependencies..."
 sudo apt update -q
 
-# Install live-build
+# Install live-build and ISO tooling
 if ! command -v lb &> /dev/null; then
-    sudo apt install -y live-build live-boot live-config debootstrap
+    sudo apt install -y live-build debootstrap squashfs-tools
 fi
 
 # Install kernel build tools
@@ -42,6 +42,6 @@ echo "[+] Build environment ready!"
 echo ""
 echo "Next steps:"
 echo "  1. Review config/live-build/auto/config"
-echo "  2. Run: ./scripts/build-tools.sh  (compile ryush + sys-monitor)"
+echo "  2. Run: make tools  (compile ryush + sys-monitor)"
 echo "  3. Run: ./scripts/build-iso.sh"
-echo "  4. Test: ./scripts/qemu-test.sh"
+echo "  4. Test: ./scripts/qemu-test.sh iso/ryuos-cli.iso 1024 --vnc"

@@ -1,7 +1,5 @@
 # Core live system
 live-boot
-live-config-systemd
-live-config
 live-tools
 openssl
 systemd
@@ -12,29 +10,21 @@ dbus
 # GUI Stack (Xorg, WM, Display Manager)
 xserver-xorg-core
 xserver-xorg-video-all
-xserver-xorg-input-all
+xserver-xorg-input-libinput
+x11-xserver-utils
 xinit
 nodm
 openbox
 tint2
-feh
-picom
 
 # GUI Aesthetics
 arc-theme
-papirus-icon-theme
 fonts-liberation
 fonts-hack
 
 # GUI Apps
 lxterminal
-pcmanfm
-surf
 rofi
-
-# Plymouth Boot Splash
-plymouth
-plymouth-themes
 
 # Essential CLI
 bash

@@ -6,6 +6,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HOST_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 WSL_BUILD_DIR="${RYUOS_BUILD_DIR:-$HOME/ryuos-build}"
 ISO_OUTPUT_DIR="${HOST_DIR}/iso"
+LEGACY_ISO_OUTPUT_DIR="${HOST_DIR}/ISO"
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH}"
 
 # shellcheck source=lib/common.sh
 source "$SCRIPT_DIR/lib/common.sh"
@@ -38,12 +40,12 @@ find_iso_file() {
         binary/live-image-amd64.iso \
         binary.hybrid.iso \
         binary.iso; do
-        if [ -f "$dir/$candidate" ]; then
+        if [ -s "$dir/$candidate" ]; then
             echo "$dir/$candidate"
             return 0
         fi
     done
-    f=$(find "$dir" -maxdepth 3 -name '*.iso' -type f 2>/dev/null | head -1)
+    f=$(find "$dir" -maxdepth 3 -name '*.iso' -type f -size +0c 2>/dev/null | head -1)
     if [ -n "$f" ]; then
         echo "$f"
         return 0
@@ -65,6 +67,7 @@ make -C "$HOST_DIR/src"
 log_info "Preparing build environment..."
 run_root rm -rf "$WSL_BUILD_DIR"
 mkdir -p "$WSL_BUILD_DIR"
+rm -f "$ISO_OUTPUT_DIR/ryuos-cli.iso" "$LEGACY_ISO_OUTPUT_DIR/ryuos-cli.iso" 2>/dev/null || true
 
 log_info "Mirroring core configurations to build directory..."
 mkdir -p "$WSL_BUILD_DIR/config/live-build"
@@ -122,6 +125,12 @@ fi
 mkdir -p "$ISO_OUTPUT_DIR"
 
 if [ -n "$ISO_FILE" ]; then
+    if [ ! -s "$ISO_FILE" ]; then
+        cp build.log "$HOST_DIR/build.log" 2>/dev/null || true
+        log_error "Build produced an empty ISO: $ISO_FILE"
+        exit 1
+    fi
+
     if [ "$BUILD_EXIT" -ne 0 ] && grep -q 'isohybrid: not found' build.log 2>/dev/null; then
         log_info "Applying isohybrid (missed during live-build)..."
         run_root isohybrid "$ISO_FILE" || true
@@ -135,6 +144,10 @@ if [ -n "$ISO_FILE" ]; then
     # Copy ISO to output directory
     log_info "Copying ISO to $ISO_OUTPUT_DIR/ryuos-cli.iso"
     cp "$ISO_FILE" "$ISO_OUTPUT_DIR/ryuos-cli.iso" 2>/dev/null || run_root cp "$ISO_FILE" "$ISO_OUTPUT_DIR/ryuos-cli.iso"
+    if [ ! -s "$ISO_OUTPUT_DIR/ryuos-cli.iso" ]; then
+        log_error "Copied ISO is empty: $ISO_OUTPUT_DIR/ryuos-cli.iso"
+        exit 1
+    fi
     
     log_success "Build completed successfully!"
     exit 0

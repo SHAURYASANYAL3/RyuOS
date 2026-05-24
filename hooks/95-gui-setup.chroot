@@ -3,8 +3,8 @@ set -e
 
 echo "[*] Configuring RyuOS GUI components..."
 
-# Enable nodm display manager service
-systemctl enable nodm || true
+# Enable the minimal display manager.
+systemctl enable nodm.service || true
 
 # Set Openbox theme to Arc-Dark
 if [ -f /etc/xdg/openbox/rc.xml ]; then
@@ -29,18 +29,40 @@ update-alternatives --set x-terminal-emulator /usr/bin/lxterminal || true
 # Set default graphical target
 systemctl set-default graphical.target || true
 
-# Disable heavy services
-systemctl disable apt-daily.timer 2>/dev/null || true
-systemctl disable apt-daily-upgrade.timer 2>/dev/null || true
-systemctl disable packagekit.service 2>/dev/null || true
-systemctl disable man-db.timer 2>/dev/null || true
+# Disable background maintenance units that are not useful in a live session.
+for unit in \
+    apt-daily.timer \
+    apt-daily-upgrade.timer \
+    e2scrub_all.timer \
+    fstrim.timer \
+    man-db.timer \
+    systemd-timesyncd.service; do
+    systemctl disable "$unit" 2>/dev/null || true
+done
 
-# Mask massive boot delayers
-systemctl mask e2scrub_reap.service 2>/dev/null || true
-systemctl mask udisks2.service 2>/dev/null || true
-systemctl mask ModemManager.service 2>/dev/null || true
+# Mask known boot/RAM offenders. Masking absent units is harmless and keeps
+# future dependency changes from reintroducing startup waits.
+for unit in \
+    live-config.service \
+    live-config-setup.service \
+    NetworkManager-wait-online.service \
+    systemd-networkd-wait-online.service \
+    cron.service \
+    packagekit.service \
+    udisks2.service \
+    ModemManager.service \
+    upower.service \
+    bluetooth.service \
+    accounts-daemon.service \
+    avahi-daemon.service; do
+    systemctl mask "$unit" 2>/dev/null || true
+done
 
-# Enable fast background networking
-systemctl enable systemd-networkd.service 2>/dev/null || true
+# Prevent GTK applications from trying to start accessibility bridges.
+mkdir -p /etc/environment.d
+cat > /etc/environment.d/10-ryuos-gui.conf << 'EOF'
+NO_AT_BRIDGE=1
+GTK_MODULES=
+EOF
 
 echo "[+] GUI setup complete."

@@ -11,6 +11,19 @@ RyuOS uses Debian's `live-build` framework. However, the repository abstracts aw
 
 The `Makefile` orchestrates this by copying everything into the correct staging structure before calling `lb build`.
 
+## Fast-Boot Live Session Strategy
+
+RyuOS does not rely on `live-config` during boot. The `live` user, passwords,
+hostname, Openbox autostart, and nodm defaults are created at build time by
+chroot hooks and filesystem includes. This keeps the boot graph small and avoids
+the multi-second `live-config.service` path that normally mutates live users on
+every startup.
+
+The live-build profile also disables APT recommends and memtest, keeps the boot
+command line to `boot=live`, and masks known desktop/live-session wait units.
+The result is less package drift, fewer background processes, and a cleaner
+systemd critical chain for QEMU and low-end hardware.
+
 ## The Initramfs Optimization Hack
 
 **The Problem**: Decompressing a modern Linux 6.x initramfs into a 128MB RAM environment frequently causes a kernel panic (`System is deadlocked on memory`).

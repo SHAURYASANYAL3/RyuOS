@@ -3,10 +3,6 @@
 # Set the wallpaper
 xsetroot -solid "#0f172a"
 
-# Start the compositor (for transparency/shadows)
-# Disabled by default to save 10-15MB of RAM. Uncomment to enable.
-# picom -b
-
 # Start the panel
 tint2 &
 

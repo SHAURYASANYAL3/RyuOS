@@ -3,16 +3,30 @@ set -e
 
 echo "[*] Installing custom fastfetch for RyuOS branding..."
 
-# Download and extract fastfetch
-cd /tmp
-wget -q https://github.com/fastfetch-cli/fastfetch/releases/latest/download/fastfetch-linux-amd64.tar.gz
-tar -xzf fastfetch-linux-amd64.tar.gz
+FASTFETCH_URL="${RYUOS_FASTFETCH_URL:-https://github.com/fastfetch-cli/fastfetch/releases/latest/download/fastfetch-linux-amd64.tar.gz}"
+WORKDIR="$(mktemp -d)"
+trap 'rm -rf "$WORKDIR"' EXIT
+
+cd "$WORKDIR"
+if command -v curl >/dev/null 2>&1; then
+    curl -fsSL "$FASTFETCH_URL" -o fastfetch.tar.gz || {
+        echo "[*] fastfetch download failed; continuing without it."
+        exit 0
+    }
+elif command -v wget >/dev/null 2>&1; then
+    wget -q "$FASTFETCH_URL" -O fastfetch.tar.gz || {
+        echo "[*] fastfetch download failed; continuing without it."
+        exit 0
+    }
+else
+    echo "[*] curl/wget unavailable; skipping fastfetch."
+    exit 0
+fi
+
+tar -xzf fastfetch.tar.gz
 
 # Find the extracted fastfetch binary and copy it
 find . -name "fastfetch" -type f -exec cp {} /usr/local/bin/ \;
 chmod +x /usr/local/bin/fastfetch
-
-# Clean up
-rm -rf /tmp/fastfetch*
 
 echo "[+] fastfetch installed."

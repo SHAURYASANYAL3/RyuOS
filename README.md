@@ -26,7 +26,7 @@ You can easily spin up the environment locally using the provided testing script
 ```
 
 ### 3. Login
-- **Username:** `user`
+- **Username:** `live`
 - **Password:** `live`
 
 You will immediately drop into **RyuShell** (`ryush`). Try running `sys-monitor` to see the native telemetry tool in action!
@@ -96,7 +96,7 @@ We welcome contributions!
 - Read our [Security Guidelines](docs/security.md) before submitting a PR.
 
 ## Known Limitations
-- The current ISO requires at least 1024MB RAM during the initial boot phase to decompress the Live Filesystem (SquashFS). Post-boot RAM usage is significantly lower.
+- The default QEMU smoke test uses 1024MB RAM for build/debug headroom; the runtime profile is tuned for 512MB-class live sessions.
 - Graphics drivers (GPU/Media) are temporarily stripped during initramfs generation to save space, but are restored in the final filesystem.
 
 ## License

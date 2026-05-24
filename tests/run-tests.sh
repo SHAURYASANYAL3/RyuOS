@@ -12,7 +12,7 @@ log_info "Running RyuOS Test Suite..."
 
 # 1. Check Directory Structure
 log_info "Validating directory structure..."
-for dir in branding build config docs hooks iso packages scripts src tests tools .github; do
+for dir in branding build config docs hooks packages scripts src tests tools .github; do
     if [ ! -d "$HOST_DIR/$dir" ]; then
         log_error "Missing required directory: $dir"
         exit 1
@@ -23,13 +23,30 @@ log_success "Directory structure is valid."
 # 2. Lint Shell Scripts (Requires shellcheck)
 log_info "Linting shell scripts..."
 if command -v shellcheck >/dev/null 2>&1; then
-    shellcheck "$HOST_DIR/scripts/"*.sh "$HOST_DIR/tests/"*.sh
+    shellcheck "$HOST_DIR/scripts/"*.sh "$HOST_DIR/tests/"*.sh "$HOST_DIR/hooks/"*.chroot
     log_success "Shell scripts passed linting."
 else
     log_info "shellcheck not installed. Skipping linting test."
 fi
 
-# 3. Test C Compilation (RyuShell & sys-monitor)
+# 3. Validate boot/package optimization guardrails
+log_info "Validating boot/package optimization guardrails..."
+PKG_LIST="$HOST_DIR/packages/ryuos.list"
+if grep -Ev '^\s*(#|$)' "$PKG_LIST" | grep -Eq '^(live-config|live-config-systemd|surf|pcmanfm|picom|plymouth|plymouth-themes|papirus-icon-theme)\b'; then
+    log_error "Banned boot/bloat package found in packages/ryuos.list."
+    exit 1
+fi
+if ! grep -q -- '--apt-recommends false' "$HOST_DIR/config/live-build/auto/config"; then
+    log_error "live-build must keep APT recommends disabled for the low-RAM profile."
+    exit 1
+fi
+if grep -q 'components' "$HOST_DIR/config/live-build/auto/config"; then
+    log_error "live-config components boot path is still enabled."
+    exit 1
+fi
+log_success "Optimization guardrails are valid."
+
+# 4. Test C Compilation (RyuShell & sys-monitor)
 log_info "Testing C compilation..."
 if command -v make >/dev/null 2>&1 && command -v gcc >/dev/null 2>&1; then
     cd "$HOST_DIR"

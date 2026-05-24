@@ -1,8 +1,7 @@
 configuration {
     modi: "drun,run";
     font: "Hack 10";
-    show-icons: true;
-    icon-theme: "Papirus-Dark";
+    show-icons: false;
     display-drun: "APPS";
     display-run: "RUN";
     drun-display-format: "{name}";
