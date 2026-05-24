@@ -24,12 +24,13 @@ picom
 arc-theme
 papirus-icon-theme
 fonts-liberation
+fonts-hack
 
 # GUI Apps
 lxterminal
 pcmanfm
 surf
-dmenu
+rofi
 
 # Plymouth Boot Splash
 plymouth
@@ -49,11 +50,12 @@ ca-certificates
 less
 grep
 sed
+zram-tools
 
 # Network
 iproute2
 iputils-ping
-isc-dhcp-client
+systemd-resolved
 curl
 wget
 openssh-client

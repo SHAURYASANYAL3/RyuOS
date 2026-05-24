@@ -1,0 +1,30 @@
+#!/bin/sh
+set -e
+
+echo "[*] Applying extreme low-memory (512MB RAM) kernel tuning..."
+
+# Create sysctl drop-in
+mkdir -p /etc/sysctl.d
+cat > /etc/sysctl.d/99-low-mem.conf << 'EOF'
+# RyuOS Low Memory Tuning
+# Maximize swap usage to offload to zRAM
+vm.swappiness=100
+# Aggressively reclaim VFS cache
+vm.vfs_cache_pressure=500
+# Allow more overcommit to prevent out-of-memory kills
+vm.overcommit_memory=1
+vm.overcommit_ratio=100
+EOF
+
+# Ensure zRAM is configured to consume 50% of RAM (which gives us ~250MB compressed space)
+cat > /etc/default/zramswap << 'EOF'
+# zram-tools configuration
+ALGO=zstd
+PERCENT=50
+EOF
+
+# Ensure unneeded memory-heavy polkit/upower dependencies are purged if they leaked in
+apt-get purge -y polkitd upower 2>/dev/null || true
+apt-get autoremove -y 2>/dev/null || true
+
+echo "[+] Low memory tuning complete."

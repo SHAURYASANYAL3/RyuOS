@@ -1,0 +1,57 @@
+configuration {
+    modi: "drun,run";
+    font: "Hack 10";
+    show-icons: true;
+    icon-theme: "Papirus-Dark";
+    display-drun: "APPS";
+    display-run: "RUN";
+    drun-display-format: "{name}";
+}
+
+@theme "default"
+
+window {
+    background-color: #0f172a;
+    border: 2px;
+    border-color: #00ffff;
+    border-radius: 0px;
+    width: 400px;
+}
+
+mainbox {
+    background-color: transparent;
+    padding: 10px;
+}
+
+inputbar {
+    background-color: #000000;
+    text-color: #00ffff;
+    padding: 5px;
+}
+
+prompt {
+    text-color: #00ffff;
+}
+
+entry {
+    text-color: #ffffff;
+}
+
+listview {
+    background-color: transparent;
+    border: 0px;
+    spacing: 5px;
+    scrollbar: false;
+    lines: 8;
+}
+
+element {
+    background-color: transparent;
+    text-color: #aaaaaa;
+    padding: 5px;
+}
+
+element selected {
+    background-color: #00ffff;
+    text-color: #000000;
+}

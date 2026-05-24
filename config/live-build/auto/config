@@ -8,7 +8,7 @@ lb config noauto \
   --distribution bookworm \
   --debian-installer false \
   --archive-areas "main contrib" \
-  --bootappend-live "boot=live components console=tty0 username=live quiet splash init=/lib/systemd/systemd" \
+  --bootappend-live "boot=live components console=tty0 username=live quiet splash init=/lib/systemd/systemd live-config.nocomponents=openssh-server,locales,keyboard-configuration,nsswitch,networking" \
   --bootloader grub \
   --security false \
   --apt-indices false \
