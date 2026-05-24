@@ -94,15 +94,16 @@ if [ -d "$HOST_DIR/packages" ]; then
     cp -R "$HOST_DIR/packages/"* config/package-lists/ 2>/dev/null || true
 fi
 
-# Copy Custom Tools (from src/ compilation)
-if [ -d "$HOST_DIR/build-artifacts" ]; then
-    cp -R "$HOST_DIR/build-artifacts/"* config/includes.chroot/usr/local/bin/ 2>/dev/null || true
-    chmod +x config/includes.chroot/usr/local/bin/* 2>/dev/null || true
-fi
-
 # Copy custom filesystem includes
 if [ -d "$HOST_DIR/config/live-build/includes.chroot" ]; then
     cp -a "$HOST_DIR/config/live-build/includes.chroot/"* config/includes.chroot/ 2>/dev/null || true
+fi
+
+# Copy custom tools last so freshly compiled binaries are never overwritten by
+# static filesystem includes.
+if [ -d "$HOST_DIR/build-artifacts" ]; then
+    cp -R "$HOST_DIR/build-artifacts/"* config/includes.chroot/usr/local/bin/ 2>/dev/null || true
+    chmod +x config/includes.chroot/usr/local/bin/* 2>/dev/null || true
 fi
 
 log_info "Running live-build configuration..."

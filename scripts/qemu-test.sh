@@ -39,12 +39,12 @@ while [ $# -gt 0 ]; do
         --rescue) KERNEL_APPEND="boot=live init=/bin/bash rw" ;;
         -h|--help) usage; exit 0 ;;
         *)
-            if [ -s "$1" ]; then
+            if [ -s "$1" ] || [[ "$1" == *.iso ]]; then
                 ISO_PATH="$1"
             elif [[ "$1" =~ ^[0-9]+$ ]]; then
                 MEM_SIZE="$1"
             else
-                echo "[-] Unknown argument or empty ISO: $1"
+                echo "[-] Unknown argument: $1"
                 usage
                 exit 1
             fi

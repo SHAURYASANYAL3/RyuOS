@@ -9,8 +9,7 @@ echo "[*] Purging bloated desktop daemons for extreme low-memory target..."
 apt-get purge --auto-remove -y \
     gvfs gvfs-daemons gvfs-libs gvfs-common gvfs-backends gvfs-fuse \
     udisks2 \
-    at-spi2-core libatspi0 \
-    lxpolkit policykit-1 polkitd packagekit \
+    lxpolkit policykit-1 packagekit \
     upower gnome-keyring \
     xdg-desktop-portal xdg-desktop-portal-gtk \
     cron logrotate tasksel tasksel-data \

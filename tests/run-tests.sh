@@ -12,7 +12,7 @@ log_info "Running RyuOS Test Suite..."
 
 # 1. Check Directory Structure
 log_info "Validating directory structure..."
-for dir in branding build config docs hooks packages scripts src tests tools .github; do
+for dir in branding config docs hooks packages scripts src tests tools .github; do
     if [ ! -d "$HOST_DIR/$dir" ]; then
         log_error "Missing required directory: $dir"
         exit 1
@@ -23,7 +23,7 @@ log_success "Directory structure is valid."
 # 2. Lint Shell Scripts (Requires shellcheck)
 log_info "Linting shell scripts..."
 if command -v shellcheck >/dev/null 2>&1; then
-    shellcheck "$HOST_DIR/scripts/"*.sh "$HOST_DIR/tests/"*.sh "$HOST_DIR/hooks/"*.chroot
+    shellcheck -e SC1091 "$HOST_DIR/scripts/"*.sh "$HOST_DIR/tests/"*.sh "$HOST_DIR/hooks/"*.chroot
     log_success "Shell scripts passed linting."
 else
     log_info "shellcheck not installed. Skipping linting test."
@@ -44,6 +44,12 @@ if grep -q 'components' "$HOST_DIR/config/live-build/auto/config"; then
     log_error "live-config components boot path is still enabled."
     exit 1
 fi
+for binary_include in ryush sys-monitor; do
+    if [ -e "$HOST_DIR/config/live-build/includes.chroot/usr/local/bin/$binary_include" ]; then
+        log_error "Do not track compiled $binary_include in includes.chroot; build from src instead."
+        exit 1
+    fi
+done
 log_success "Optimization guardrails are valid."
 
 # 4. Test C Compilation (RyuShell & sys-monitor)

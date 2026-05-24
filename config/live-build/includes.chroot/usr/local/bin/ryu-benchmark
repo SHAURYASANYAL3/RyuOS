@@ -1,53 +1,46 @@
 #!/bin/bash
-# RyuOS Benchmark and Diagnostic Tool
+# RyuOS benchmark and diagnostic summary.
 
-# ANSI Colors
-C="\e[1;36m" # Cyan
-W="\e[1;37m" # White
-G="\e[1;30m" # Gray
-R="\e[0m"    # Reset
+C="\e[1;36m"
+W="\e[1;37m"
+G="\e[1;30m"
+R="\e[0m"
 
-echo -e "${C}      ____             ____  _____"
-echo -e "${C}     / __ \__  ____  _/ __ \/ ___/"
-echo -e "${C}    / /_/ / / / / / / / / / \__ \ "
-echo -e "${C}   / _, _/ /_/ / /_/ / /_/ /___/ /"
-echo -e "${C}  /_/ |_|\__, /\__,_/\____//____/ "
-echo -e "${C}        /____/                    ${W}ryu-benchmark v1.0${R}"
-echo -e ""
+echo -e "${C}  ____        _   ___  ____"
+echo -e " |  _ \\ _   _| | / _ \\/ ___|"
+echo -e " | |_) | | | | |/ _ \\\\___ \\"
+echo -e " |  _ <| |_| | | (_) |__) |"
+echo -e " |_| \\_\\\\__,_|_|\\___/____/${W}  ryu-benchmark v1.1${R}"
+echo ""
 
-# Boot Time
 if command -v systemd-analyze >/dev/null 2>&1; then
-    BOOT_TIME=$(systemd-analyze | grep -oP 'Startup finished in \K[^$]+' || echo "N/A")
+    BOOT_TIME=$(systemd-analyze | sed -n 's/^Startup finished in //p' || true)
+    SLOW_UNIT=$(systemd-analyze blame 2>/dev/null | head -1 | xargs || true)
 else
     BOOT_TIME="N/A"
+    SLOW_UNIT="N/A"
 fi
-echo -e "${C} > ${W}Boot Time      : ${G}${BOOT_TIME}${R}"
+echo -e "${C} > ${W}Boot Time      : ${G}${BOOT_TIME:-N/A}${R}"
+echo -e "${C} > ${W}Slowest Unit   : ${G}${SLOW_UNIT:-N/A}${R}"
 
-# RAM
 MEM_TOTAL=$(free -m | awk '/^Mem:/{print $2}')
 MEM_USED=$(free -m | awk '/^Mem:/{print $3}')
 echo -e "${C} > ${W}RAM Usage      : ${G}${MEM_USED}MB / ${MEM_TOTAL}MB${R}"
 
-# CPU Load
 LOAD_AVG=$(uptime | awk -F'load average:' '{ print $2 }' | xargs)
 echo -e "${C} > ${W}Load Average   : ${G}${LOAD_AVG}${R}"
 
-# Processes
 PROC_COUNT=$(ps -A --no-headers | wc -l)
 echo -e "${C} > ${W}Processes      : ${G}${PROC_COUNT}${R}"
 
-# Packages
-PKG_COUNT=$(dpkg -l | grep -c '^ii')
+PKG_COUNT=$(dpkg-query -f '.\n' -W 2>/dev/null | wc -l || echo "N/A")
 echo -e "${C} > ${W}Packages       : ${G}${PKG_COUNT}${R}"
 
-# Kernel
-KERNEL_VER=$(uname -r)
-echo -e "${C} > ${W}Kernel         : ${G}${KERNEL_VER}${R}"
+echo -e "${C} > ${W}Kernel         : ${G}$(uname -r)${R}"
 
-# GUI
-if [ -n "$DISPLAY" ]; then
-    WM=$(wmctrl -m 2>/dev/null | grep Name: | awk '{print $2}' || echo "Openbox")
-    echo -e "${C} > ${W}Window Manager : ${G}${WM}${R}"
+if [ -n "${DISPLAY:-}" ]; then
+    WM=$(wmctrl -m 2>/dev/null | awk '/Name:/{print $2}' || true)
+    echo -e "${C} > ${W}Window Manager : ${G}${WM:-Openbox}${R}"
 else
     echo -e "${C} > ${W}Window Manager : ${G}None (CLI)${R}"
 fi
