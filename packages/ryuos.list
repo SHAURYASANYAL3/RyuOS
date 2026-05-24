@@ -1,5 +1,7 @@
 # Core live system
 live-boot
+live-config
+live-config-systemd
 live-tools
 openssl
 systemd
@@ -25,6 +27,7 @@ fonts-hack
 # GUI Apps
 lxterminal
 rofi
+surf
 
 # Essential CLI
 bash
