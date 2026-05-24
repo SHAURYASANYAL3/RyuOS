@@ -28,7 +28,7 @@ fonts-liberation
 # GUI Apps
 lxterminal
 pcmanfm
-badwolf
+surf
 dmenu
 
 # Plymouth Boot Splash
