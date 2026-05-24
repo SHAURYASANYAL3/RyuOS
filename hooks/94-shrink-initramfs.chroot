@@ -15,14 +15,23 @@ esac
 
 . /usr/share/initramfs-tools/hook-functions
 
-echo "Shrinking massive DRM modules from initramfs..."
-# Remove heavy DRM kernel modules from the staging directory
+echo "Shrinking massive kernel modules from initramfs..."
+# Remove heavy DRM, sound, wireless, and media modules from the staging directory
 rm -rf ${DESTDIR}/lib/modules/*/kernel/drivers/gpu/drm/amd
 rm -rf ${DESTDIR}/lib/modules/*/kernel/drivers/gpu/drm/nouveau
 rm -rf ${DESTDIR}/lib/modules/*/kernel/drivers/gpu/drm/radeon
+rm -rf ${DESTDIR}/lib/modules/*/kernel/sound
+rm -rf ${DESTDIR}/lib/modules/*/kernel/drivers/media
+rm -rf ${DESTDIR}/lib/modules/*/kernel/drivers/net/wireless
+rm -rf ${DESTDIR}/lib/modules/*/kernel/drivers/bluetooth
+rm -rf ${DESTDIR}/lib/modules/*/kernel/drivers/infiniband
+rm -rf ${DESTDIR}/lib/modules/*/kernel/drivers/staging
 EOF
 
 chmod +x /etc/initramfs-tools/hooks/shrink-drm
+
+# Switch compression to gzip because zstd decompression uses massive amounts of RAM
+sed -i 's/^COMPRESS=.*/COMPRESS=gzip/' /etc/initramfs-tools/initramfs.conf
 
 # Rebuild initramfs to apply the shrinkage
 update-initramfs -u
