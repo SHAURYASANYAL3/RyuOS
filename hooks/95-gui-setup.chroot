@@ -1,0 +1,38 @@
+#!/bin/sh
+set -e
+
+echo "[*] Configuring RyuOS GUI components..."
+
+# Enable nodm display manager service
+systemctl enable nodm || true
+
+# Set Openbox theme to Arc-Dark
+if [ -f /etc/xdg/openbox/rc.xml ]; then
+    sed -i 's/<name>Clearlooks<\/name>/<name>Arc-Dark<\/name>/g' /etc/xdg/openbox/rc.xml
+    
+    # Inject terminal shortcut (Super+Enter) into Openbox rc.xml
+    sed -i '/<\/keyboard>/i \
+    <keybind key="W-Return">\n      <action name="Execute">\n        <command>lxterminal<\/command>\n      <\/action>\n    <\/keybind>' /etc/xdg/openbox/rc.xml
+    
+    # Inject dmenu shortcut (Super+D)
+    sed -i '/<\/keyboard>/i \
+    <keybind key="W-d">\n      <action name="Execute">\n        <command>dmenu_run -nf "#00ffff" -nb "#000000" -sb "#00ffff" -sf "#000000" -fn "monospace-10"<\/command>\n      <\/action>\n    <\/keybind>' /etc/xdg/openbox/rc.xml
+fi
+
+# Ensure correct permissions on skel directories
+chmod 755 /etc/skel/.xsession
+chmod 755 /etc/skel/.config/openbox/autostart
+
+# Update default alternatives for x-terminal-emulator
+update-alternatives --set x-terminal-emulator /usr/bin/lxterminal || true
+
+# Set default graphical target
+systemctl set-default graphical.target || true
+
+# Disable heavy services
+systemctl disable apt-daily.timer 2>/dev/null || true
+systemctl disable apt-daily-upgrade.timer 2>/dev/null || true
+systemctl disable packagekit.service 2>/dev/null || true
+systemctl disable man-db.timer 2>/dev/null || true
+
+echo "[+] GUI setup complete."

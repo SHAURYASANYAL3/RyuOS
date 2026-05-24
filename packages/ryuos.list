@@ -9,10 +9,31 @@ systemd-sysv
 udev
 dbus
 
+# GUI Stack (Xorg, WM, Display Manager)
+xserver-xorg-core
+xserver-xorg-video-all
+xserver-xorg-input-all
+xinit
+nodm
+openbox
+tint2
+feh
+picom
+
+# GUI Aesthetics
+arc-theme
+papirus-icon-theme
+fonts-liberation
+
+# GUI Apps
+lxterminal
+pcmanfm
+badwolf
+dmenu
+
 # Plymouth Boot Splash
 plymouth
 plymouth-themes
-fonts-liberation
 
 # Essential CLI
 bash
