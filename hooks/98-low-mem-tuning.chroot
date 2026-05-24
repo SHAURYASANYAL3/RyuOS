@@ -16,11 +16,11 @@ vm.overcommit_memory=1
 vm.overcommit_ratio=100
 EOF
 
-# Ensure zRAM is configured to consume 50% of RAM (which gives us ~250MB compressed space)
+# Ensure zRAM is configured to consume 75% of RAM
 cat > /etc/default/zramswap << 'EOF'
 # zram-tools configuration
 ALGO=zstd
-PERCENT=50
+PERCENT=75
 EOF
 
 # Ensure unneeded memory-heavy polkit/upower dependencies are purged if they leaked in

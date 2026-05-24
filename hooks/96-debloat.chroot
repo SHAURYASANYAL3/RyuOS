@@ -1,0 +1,23 @@
+#!/bin/sh
+set -e
+
+echo "[*] Purging bloated desktop daemons for extreme low-memory target..."
+
+# Purge auto-mounters, accessibility daemons, and policykit
+apt-get purge --auto-remove -y gvfs gvfs-daemons gvfs-libs gvfs-common udisks2 at-spi2-core libatspi0 lxpolkit policykit-1 polkitd 2>/dev/null || true
+
+# Limit systemd-journald memory usage
+mkdir -p /etc/systemd/journald.conf.d
+cat > /etc/systemd/journald.conf.d/ryuos-limits.conf << 'EOF'
+[Journal]
+SystemMaxUse=10M
+RuntimeMaxUse=10M
+EOF
+
+# Mask journal flush to speed up boot
+systemctl mask systemd-journal-flush.service 2>/dev/null || true
+
+# Mask plymouth from consuming RAM/CPU after boot splash
+systemctl mask plymouth-read-write.service 2>/dev/null || true
+
+echo "[+] Debloat complete."
