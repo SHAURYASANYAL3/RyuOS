@@ -1,0 +1,30 @@
+#!/bin/sh
+set -e
+
+echo "[*] Shrinking initramfs for extreme low-RAM boot..."
+
+# Create an initramfs-tools hook to delete massive DRM modules before packing
+mkdir -p /etc/initramfs-tools/hooks
+cat > /etc/initramfs-tools/hooks/shrink-drm << 'EOF'
+#!/bin/sh
+PREREQ=""
+prereqs() { echo "$PREREQ"; }
+case "$1" in
+    prereqs) prereqs; exit 0 ;;
+esac
+
+. /usr/share/initramfs-tools/hook-functions
+
+echo "Shrinking massive DRM modules from initramfs..."
+# Remove heavy DRM kernel modules from the staging directory
+rm -rf ${DESTDIR}/lib/modules/*/kernel/drivers/gpu/drm/amd
+rm -rf ${DESTDIR}/lib/modules/*/kernel/drivers/gpu/drm/nouveau
+rm -rf ${DESTDIR}/lib/modules/*/kernel/drivers/gpu/drm/radeon
+EOF
+
+chmod +x /etc/initramfs-tools/hooks/shrink-drm
+
+# Rebuild initramfs to apply the shrinkage
+update-initramfs -u
+
+echo "[+] initramfs heavily shrunk."
