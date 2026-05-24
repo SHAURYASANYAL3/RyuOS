@@ -6,9 +6,10 @@ lb config noauto \
   --binary-images iso-hybrid \
   --mode debian \
   --distribution bookworm \
+  --init systemd \
   --debian-installer false \
   --archive-areas "main contrib" \
-  --bootappend-live "boot=live console=tty0 quiet loglevel=3 init=/lib/systemd/systemd net.ifnames=0 biosdevname=0 rootfstype=ramfs live-noconfig" \
+  --bootappend-live "boot=live console=tty0 quiet loglevel=3 init=/lib/systemd/systemd net.ifnames=0 biosdevname=0 rootfstype=ramfs" \
   --bootloader grub \
   --apt-recommends false \
   --memtest none \
