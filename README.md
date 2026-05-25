@@ -114,9 +114,26 @@ We welcome contributions!
 
 ## Tested RAM Configurations
 
-RyuOS has been verified under the following memory profiles:
-- **1 GB RAM**: Baseline testing configuration. Full live environment decompression and boot completed successfully, running core CLI utilities and `sys-monitor` with low idle overhead (~62MB).
-- **2 GB RAM**: Graphical testing configuration. Full Openbox desktop environment tested under load, running resource-heavy applications simultaneously (including Brave Browser and the Java-based SKlauncher).
+To determine the performance boundaries of RyuOS, we actively benchmarked and tested the live environment across various memory constraints:
+
+### 1. 256 MB RAM — Hard Floor (Kernel Panic)
+*At 256MB RAM, the Linux kernel fails to unpack the compressed initramfs image, leading to a memory deadlock panic during early boot.*
+![256MB RAM Kernel Panic](branding/screenshots/ram_test_256mb_panic.png)
+
+### 2. 384 MB RAM — Absolute Minimum Bootable RAM
+*The system successfully decompresses and boots into the Openbox desktop environment. Running the custom `ryu-benchmark` tool reports 169MB used out of 331MB total.*
+![384MB RAM Benchmark](branding/screenshots/ram_test_384mb.png)
+
+### 3. 512 MB RAM — Lightweight Desktop Profile
+*Standard low-spec baseline. The desktop environment runs smoothly, with `ryu-benchmark` reporting 168MB used out of 457MB total.*
+![512MB RAM Benchmark](branding/screenshots/ram_test_512mb.png)
+
+### 4. 1 GB RAM — Recommended Baseline Configuration
+*Decompresses and boots with high stability. Highly stable, with ample room for systems programming, terminal tools, and lightweight development.*
+
+### 5. 2 GB RAM — Power User & Multi-App Graphical Profile
+*Provides full GUI multitasking headroom. Tested running Brave Browser (loading ChatGPT) and a Java desktop app (SKlauncher) concurrently under load.*
+
 
 ## Known Limitations
 - The default QEMU smoke test uses 1024MB RAM for build/debug headroom; the runtime profile is tuned for 512MB-class live sessions.
