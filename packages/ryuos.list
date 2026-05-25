@@ -70,3 +70,7 @@ firmware-misc-nonfree
 firmware-iwlwifi
 firmware-realtek
 firmware-amd-graphics
+
+# Virtual Machine Guest Tools
+virtualbox-guest-x11
+virtualbox-guest-utils
