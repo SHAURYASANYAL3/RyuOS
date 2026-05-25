@@ -112,6 +112,12 @@ We welcome contributions!
 - Check out our [Roadmap](docs/roadmap.md) to see upcoming features (like AI Terminal integrations).
 - Read our [Security Guidelines](docs/security.md) before submitting a PR.
 
+## Tested RAM Configurations
+
+RyuOS has been verified under the following memory profiles:
+- **1 GB RAM**: Baseline testing configuration. Full live environment decompression and boot completed successfully, running core CLI utilities and `sys-monitor` with low idle overhead (~62MB).
+- **2 GB RAM**: Graphical testing configuration. Full Openbox desktop environment tested under load, running resource-heavy applications simultaneously (including Brave Browser and the Java-based SKlauncher).
+
 ## Known Limitations
 - The default QEMU smoke test uses 1024MB RAM for build/debug headroom; the runtime profile is tuned for 512MB-class live sessions.
 - Graphics drivers (GPU/Media) are temporarily stripped during initramfs generation to save space, but are restored in the final filesystem.
