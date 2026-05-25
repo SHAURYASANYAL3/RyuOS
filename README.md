@@ -39,9 +39,25 @@ RyuOS abstracts away standard OS cruft while retaining the rock-solid Debian Boo
 
 ## Screenshots Showcase
 
-Here are some live screenshots of RyuOS running in QEMU:
+Here are some live screenshots of RyuOS running in virtualization (QEMU & VirtualBox):
 
-### Extremely Low RAM Footprint
+### Desktop Environment & System Telemetry
+*Running the custom system telemetry tool (`sys-monitor`) alongside the Brave Browser inside VirtualBox.*
+![sys-monitor and Brave Browser](branding/screenshots/sys_monitor_and_brave.png)
+
+### Persistent Virtual Storage Setup
+*Formatting, mounting, and verifying a secondary 10GB virtual storage disk (`/dev/vda` or `/dev/sda`) for additional software installation.*
+![10GB Storage Setup](branding/screenshots/storage_setup.png)
+
+### Desktop App Compatibility (Java & Web)
+*Running a Java desktop application (SKlauncher) successfully on top of RyuOS.*
+![SKlauncher Java App](branding/screenshots/sklauncher_app.png)
+
+### Resource Management Under Load
+*Htop showing system telemetry while running both Brave Browser (with ChatGPT) and a Java application within a 2GB RAM footprint.*
+![System Load Htop](branding/screenshots/system_load_htop.png)
+
+### Extremely Low Idle Footprint
 *Showing RyuOS idling at just ~62MB of RAM usage within a 1GB environment.*
 ![htop RAM Usage](branding/screenshots/htop_usage.png)
 
@@ -52,6 +68,7 @@ Here are some live screenshots of RyuOS running in QEMU:
 ### Developer Environment
 *The pre-configured GNU Bash terminal ready for systems programming.*
 ![Terminal Environment](branding/screenshots/terminal_env.png)
+
 
 ## Building from Source
 
