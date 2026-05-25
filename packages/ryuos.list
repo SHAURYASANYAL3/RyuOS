@@ -62,3 +62,11 @@ build-essential
 python3-minimal
 git
 busybox
+
+# Hardware Drivers
+firmware-linux
+firmware-linux-nonfree
+firmware-misc-nonfree
+firmware-iwlwifi
+firmware-realtek
+firmware-amd-graphics

@@ -8,7 +8,7 @@ lb config noauto \
   --distribution bookworm \
   --initsystem systemd \
   --debian-installer false \
-  --archive-areas "main contrib" \
+  --archive-areas "main contrib non-free non-free-firmware" \
   --bootappend-live "boot=live console=tty0 quiet loglevel=3 init=/lib/systemd/systemd net.ifnames=0 biosdevname=0 rootfstype=ramfs" \
   --bootloader grub \
   --apt-recommends false \

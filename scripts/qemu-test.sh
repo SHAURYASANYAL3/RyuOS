@@ -13,7 +13,7 @@ else
     ISO_PATH="${PROJECT_DIR}/ISO/ryuos-cli.iso"
 fi
 
-MEM_SIZE="1024"
+MEM_SIZE="2048"
 DISPLAY_MODE="auto"   # auto | gui | text | vnc
 KERNEL_APPEND=""
 
@@ -119,6 +119,11 @@ case "$DISPLAY_MODE" in
         ;;
 esac
 
+if [ ! -f "ryuos-storage.qcow2" ]; then
+    echo "[*] Creating 10GB persistent virtual drive..."
+    qemu-img create -f qcow2 ryuos-storage.qcow2 10G
+fi
+
 echo "[*] Booting: $ISO_PATH"
 echo "[*] RAM: ${MEM_SIZE}MB"
 if [ -n "$KERNEL_APPEND" ]; then
@@ -132,6 +137,7 @@ QEMU_ARGS=(
     -boot d
     "${DISPLAY_OPTS[@]}"
     "-netdev" "user,id=net0" "-device" "virtio-net-pci,netdev=net0"
+    "-drive" "file=ryuos-storage.qcow2,format=qcow2,if=virtio"
 )
 
 if [ -n "$KERNEL_APPEND" ]; then
